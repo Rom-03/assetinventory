@@ -10,8 +10,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-      import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyCJv-JSz5O9GHKToSxCtzu6TPVi6aPvtKY",
@@ -24,42 +23,19 @@
       };
 
       const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
       const db = getFirestore(app);
-      const provider = new GoogleAuthProvider();
 
-      window.firebaseAuth = auth;
       window.firebaseDb = db;
-      window.googleProvider = provider;
-      window.signInWithPopup = signInWithPopup;
-      window.signOut = signOut;
-      window.onAuthStateChanged = onAuthStateChanged;
       window.collection = collection;
       window.addDoc = addDoc;
       window.getDocs = getDocs;
       window.doc = doc;
       window.deleteDoc = deleteDoc;
       window.updateDoc = updateDoc;
-      window.setDoc = setDoc;
 
-      // Initialize Auth State Listener
-      onAuthStateChanged(auth, (user) => {
-          const authOverlay = document.getElementById('authOverlay');
-          const userAvatar = document.getElementById('userAvatar');
-          const userName = document.getElementById('userName');
-          const userEmail = document.getElementById('userEmail');
-
-          if (user) {
-              authOverlay.classList.add('hidden');
-              authOverlay.classList.remove('flex');
-              if(userAvatar) userAvatar.src = user.photoURL || 'https://via.placeholder.com/150';
-              if(userName) userName.innerText = user.displayName || 'Admin User';
-              if(userEmail) userEmail.innerText = user.email;
-              loadAllDataFromFirebase();
-          } else {
-              authOverlay.classList.remove('hidden');
-              authOverlay.classList.add('flex');
-          }
+      // Automatically load data on page open
+      window.addEventListener('DOMContentLoaded', () => {
+          loadAllDataFromFirebase();
       });
     </script>
 
@@ -81,22 +57,6 @@
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-900 antialiased min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
-
-    <!-- Authentication Overlay Modal -->
-    <div id="authOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl text-center space-y-6 animate-scale border border-slate-100">
-            <div class="w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-lg shadow-red-600/30">
-                <i class="fa-solid fa-truck-fast"></i>
-            </div>
-            <div class="space-y-2">
-                <h2 class="text-xl font-extrabold text-slate-800">LBC Asset Inventory</h2>
-                <p class="text-xs text-slate-500 leading-relaxed">Secure Enterprise Cloud Platform. Please sign in with your authorized Google workspace account to access inventory data.</p>
-            </div>
-            <button onclick="loginWithGoogle()" class="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-semibold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center space-x-3">
-                <i class="fa-brands fa-google text-red-500 text-base"></i><span>Sign in with Google</span>
-            </button>
-        </div>
-    </div>
 
     <!-- Top Navigation Header -->
     <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
@@ -123,12 +83,13 @@
                 </button>
 
                 <div class="flex items-center space-x-2.5 border-l border-slate-800 pl-3 ml-1">
-                    <img id="userAvatar" src="https://via.placeholder.com/150" alt="Avatar" class="w-8 h-8 rounded-full border border-slate-700 object-cover">
-                    <div class="hidden md:block text-left">
-                        <span id="userName" class="text-xs font-semibold block leading-tight text-slate-200">Admin</span>
-                        <span id="userEmail" class="text-[10px] text-emerald-400 font-medium block truncate max-w-[120px]">Connected</span>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-xs shadow-inner text-white">
+                        AD
                     </div>
-                    <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-400 text-xs ml-2 p-1" title="Sign Out"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    <div class="hidden md:block text-left">
+                        <span class="text-xs font-semibold block leading-tight text-slate-200">System Admin</span>
+                        <span class="text-[10px] text-emerald-400 font-medium block">● Online</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -353,7 +314,7 @@
             <div id="modalBody" class="space-y-3.5 max-h-[65vh] overflow-y-auto pr-2"></div>
             <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button onclick="closeModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
-                <button id="modalSaveBtn" onclick="saveRecord()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20">Save Record</button>
+                <button onclick="saveRecord()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20">Save Record</button>
             </div>
         </div>
     </div>
@@ -431,17 +392,6 @@
                 addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Mikrotik Router</span>';
                 addBtn.setAttribute('onclick', "openModal('mikrotik', 'add')");
             }
-        }
-
-        function loginWithGoogle() {
-            window.signInWithPopup(window.firebaseAuth, window.googleProvider).catch((error) => {
-                console.error("Auth error:", error);
-                alert("Authentication failed. Please try again.");
-            });
-        }
-
-        function logoutUser() {
-            window.signOut(window.firebaseAuth);
         }
 
         // Firebase Cloud Sync Operations
@@ -811,13 +761,51 @@
         }
 
         async function confirmSystemReset() {
-            showWarningModal('Reset Cloud Database', 'Warning: This will clear data locally from view. To clear Firestore collections, visit your Firebase console.', () => {
+            showWarningModal('Reset Cloud View', 'Warning: This will reload the current view from the database.', () => {
                 loadAllDataFromFirebase();
             });
         }
 
         function exportDataJSON() {
-            exportData(); // Client JSON backup wrapper
+            const data = {
+                computerTable: document.querySelector('#table-computer tbody').innerHTML,
+                faceRecogTable: document.querySelector('#table-facerecog tbody').innerHTML,
+                mikrotikTable: document.querySelector('#table-mikrotik tbody').innerHTML,
+                branchCards: document.querySelector('#branch-cards-grid').innerHTML,
+                hubCards: document.querySelector('#hub-cards-grid').innerHTML,
+                cctvTable: document.querySelector('#table-cctv tbody').innerHTML
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `lbc_enterprise_inventory_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.computerTable) document.querySelector('#table-computer tbody').innerHTML = data.computerTable;
+                    if (data.faceRecogTable) document.querySelector('#table-facerecog tbody').innerHTML = data.faceRecogTable;
+                    if (data.mikrotikTable) document.querySelector('#table-mikrotik tbody').innerHTML = data.mikrotikTable;
+                    if (data.branchCards) document.querySelector('#branch-cards-grid').innerHTML = data.branchCards;
+                    if (data.hubCards) document.querySelector('#hub-cards-grid').innerHTML = data.hubCards;
+                    if (data.cctvTable) document.querySelector('#table-cctv tbody').innerHTML = data.cctvTable;
+                    updateBranchComputerCounts();
+                    alert('Backup imported successfully!');
+                } catch (err) {
+                    alert('Invalid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
     </script>
 </body>
