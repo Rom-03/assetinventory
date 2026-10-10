@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Asset Inventory System - LBC</title>
+    <title>Asset Inventory - Jerome</title>
+
+    <!-- Web Tab Favicon Logo -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23dc2626' d='M64 32C28.7 32 0 60.7 0 96V384c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zM224 160V352H160V160h64zm96 0v64H288V160h32zm0 128v64H288V288h32z'/></svg>">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
@@ -33,7 +42,6 @@
       window.deleteDoc = deleteDoc;
       window.updateDoc = updateDoc;
 
-      // Automatically load data on page open
       window.addEventListener('DOMContentLoaded', () => {
           loadAllDataFromFirebase();
       });
@@ -56,26 +64,33 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-900 antialiased min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+<body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col selection:bg-red-600 selection:text-white transition-colors duration-200">
 
     <!-- Top Navigation Header -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header class="bg-slate-900 dark:bg-slate-900 text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
+        <div class="w-full px-4 sm:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-gradient-to-br from-red-600 to-red-700 p-2.5 rounded-xl text-white shadow-md shadow-red-900/30 flex items-center justify-center">
                     <i class="fa-solid fa-boxes-stacked text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-lg font-bold tracking-tight block leading-tight">LBC Express</span>
-                    <span class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Asset Inventory Cloud</span>
+                    <span class="text-lg font-bold tracking-tight block leading-tight">Asset Inventory</span>
+                    <span class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Jerome Cloud Platform</span>
                 </div>
             </div>
+            
             <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-2 rounded-xl border border-slate-700 text-xs flex items-center justify-center transition-all mr-1" title="Toggle Dark/Light Mode">
+                    <i id="theme-icon" class="fa-solid fa-moon text-amber-400 text-sm"></i>
+                </button>
+
+                <!-- Data Tools -->
                 <button onclick="exportDataJSON()" class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-slate-700/80 shadow-sm" title="Export Backup">
-                    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i><span class="hidden sm:inline">Export</span>
+                    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i><span class="hidden sm:inline">Export JSON</span>
                 </button>
                 <label class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-slate-700/80 shadow-sm cursor-pointer" title="Import Backup">
-                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i><span class="hidden sm:inline">Import</span>
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i><span class="hidden sm:inline">Import JSON</span>
                     <input type="file" id="importFile" accept=".json" onchange="importDataJSON(event)" class="hidden">
                 </label>
                 <button onclick="confirmSystemReset()" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-rose-900/50 shadow-sm" title="Clear All Data">
@@ -84,10 +99,10 @@
 
                 <div class="flex items-center space-x-2.5 border-l border-slate-800 pl-3 ml-1">
                     <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-xs shadow-inner text-white">
-                        AD
+                        J
                     </div>
                     <div class="hidden md:block text-left">
-                        <span class="text-xs font-semibold block leading-tight text-slate-200">System Admin</span>
+                        <span class="text-xs font-semibold block leading-tight text-slate-200">Jerome Admin</span>
                         <span class="text-[10px] text-emerald-400 font-medium block">● Online</span>
                     </div>
                 </div>
@@ -96,103 +111,106 @@
     </header>
 
     <!-- Main Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-16 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-16 z-30 transition-colors duration-200">
+        <div class="w-full px-4 sm:px-8">
             <div class="flex space-x-1 sm:space-x-8 overflow-x-auto scrollbar-none">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-red-600 text-red-600 flex items-center space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-chart-pie text-sm"></i><span>Dashboard</span>
                 </button>
-                <button onclick="switchTab('devices')" id="nav-devices" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
+                <button onclick="switchTab('devices')" id="nav-devices" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-laptop text-sm"></i><span>Devices</span>
                 </button>
-                <button onclick="switchTab('branch')" id="nav-branch" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
+                <button onclick="switchTab('branch')" id="nav-branch" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-store text-sm"></i><span>Branch</span>
                 </button>
-                <button onclick="switchTab('hub')" id="nav-hub" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
+                <button onclick="switchTab('hub')" id="nav-hub" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-warehouse text-sm"></i><span>Delivery Hub</span>
                 </button>
-                <button onclick="switchTab('cctv')" id="nav-cctv" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
+                <button onclick="switchTab('cctv')" id="nav-cctv" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-video text-sm"></i><span>CCTV</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Content Area -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full animate-fade">
+    <!-- Full Screen Content Area -->
+    <main class="w-full px-4 sm:px-8 py-6 flex-1 animate-fade">
 
         <!-- ================= DASHBOARD TAB ================= -->
         <div id="tab-dashboard" class="tab-content space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Devices</p>
-                        <h3 id="stat-devices" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                        <h3 id="stat-devices" class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">0</h3>
                     </div>
-                    <div class="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-laptop"></i></div>
+                    <div class="w-14 h-14 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-laptop"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Branches</p>
-                        <h3 id="stat-branches" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                        <h3 id="stat-branches" class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">0</h3>
                     </div>
-                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-store"></i></div>
+                    <div class="w-14 h-14 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-store"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Delivery Hubs</p>
-                        <h3 id="stat-hubs" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                        <h3 id="stat-hubs" class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">0</h3>
                     </div>
-                    <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-warehouse"></i></div>
+                    <div class="w-14 h-14 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-warehouse"></i></div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">CCTV Units</p>
-                        <h3 id="stat-cctv" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                        <h3 id="stat-cctv" class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">0</h3>
                     </div>
-                    <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-video"></i></div>
+                    <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-video"></i></div>
                 </div>
             </div>
         </div>
 
         <!-- ================= DEVICES TAB ================= -->
         <div id="tab-devices" class="tab-content hidden space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Device Inventory Management</h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Track computers, biometric recognition, and network routers synced to cloud.</p>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Device Inventory Management</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Track computers, biometric recognition, and network routers synced to cloud.</p>
                 </div>
                 <button onclick="openModal('computer', 'add')" id="addDeviceBtn" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-plus"></i><span>Add Computer Record</span>
                 </button>
             </div>
 
-            <div class="flex space-x-2 border-b border-slate-200 pb-2 overflow-x-auto">
+            <div class="flex space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
                 <button onclick="switchDeviceSubTab('computer')" id="sub-nav-computer" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-red-600 text-white transition-all shadow-sm whitespace-nowrap">Computer</button>
-                <button onclick="switchDeviceSubTab('facerecog')" id="sub-nav-facerecog" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all whitespace-nowrap">Face Recognition</button>
-                <button onclick="switchDeviceSubTab('mikrotik')" id="sub-nav-mikrotik" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all whitespace-nowrap">Mikrotik</button>
+                <button onclick="switchDeviceSubTab('facerecog')" id="sub-nav-facerecog" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all whitespace-nowrap">Face Recognition</button>
+                <button onclick="switchDeviceSubTab('mikrotik')" id="sub-nav-mikrotik" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all whitespace-nowrap">Mikrotik</button>
             </div>
 
             <!-- Sub-tab: Computer -->
             <div id="sub-tab-computer" class="device-sub-content space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h3 class="font-bold text-slate-800 text-sm">Computers & Laptops Directory</h3>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Computers Directory</h3>
+                            <button onclick="exportTableToCSV('table-computer', 'computer_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
+                        </div>
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            <select id="filter-branch-comp" onchange="filterTable('computer')" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 font-medium">
+                            <select id="filter-branch-comp" onchange="filterTable('computer')" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
                                 <option value="">Filter Branch Code (All)</option>
                             </select>
-                            <input type="text" id="search-comp" oninput="filterTableSearch('computer')" placeholder="Search records..." class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 w-full sm:w-52">
+                            <input type="text" id="search-comp" oninput="filterTableSearch('computer')" placeholder="Search records..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
                         </div>
                     </div>
                     <div class="overflow-x-auto max-h-[600px]">
-                        <table id="table-computer" class="w-full text-left text-xs text-slate-600 whitespace-nowrap">
-                            <thead class="bg-slate-50 text-slate-700 uppercase sticky top-0 z-10 shadow-sm font-semibold">
+                        <table id="table-computer" class="w-full text-left text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase sticky top-0 z-10 shadow-sm font-semibold">
                                 <tr>
                                     <th class="p-3.5">TSE Name</th><th class="p-3.5">Business Unit</th><th class="p-3.5">Region</th><th class="p-3.5">Area</th><th class="p-3.5">Branch Code</th><th class="p-3.5">Location</th><th class="p-3.5">Description</th><th class="p-3.5">Asset Tag</th><th class="p-3.5">Serial</th><th class="p-3.5">Model</th><th class="p-3.5">Category</th><th class="p-3.5">Actual Status</th><th class="p-3.5">PTU STATUS</th><th class="p-3.5">Branch TIN Number</th><th class="p-3.5">Machine Type</th><th class="p-3.5">Processor</th><th class="p-3.5">OS Version</th><th class="p-3.5">DEVICE FAMILY</th><th class="p-3.5">Host ID / Device Name</th><th class="p-3.5">OS Ticket #</th><th class="p-3.5">HEF Recommendation</th><th class="p-3.5">Replaced with Serial Number</th><th class="p-3.5">SOTI Enrolled</th><th class="p-3.5">Sophos Enrolled</th><th class="p-3.5">ITAMS Inventory</th><th class="p-3.5 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100"></tbody>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -200,17 +218,20 @@
 
             <!-- Sub-tab: Face Recognition -->
             <div id="sub-tab-facerecog" class="device-sub-content hidden space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h3 class="font-bold text-slate-800 text-sm">Face Recognition Terminals</h3>
-                        <input type="text" id="search-fr" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 w-full sm:w-52">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Face Recognition Terminals</h3>
+                            <button onclick="exportTableToCSV('table-facerecog', 'facerecognition_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
+                        </div>
+                        <input type="text" id="search-fr" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
                     </div>
                     <div class="overflow-x-auto">
-                        <table id="table-facerecog" class="w-full text-left text-xs text-slate-600">
-                            <thead class="bg-slate-50 text-slate-700 uppercase font-semibold">
+                        <table id="table-facerecog" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
                                 <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100"></tbody>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -218,17 +239,20 @@
 
             <!-- Sub-tab: Mikrotik -->
             <div id="sub-tab-mikrotik" class="device-sub-content hidden space-y-4">
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h3 class="font-bold text-slate-800 text-sm">Mikrotik Router Network</h3>
-                        <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 w-full sm:w-52">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Mikrotik Router Network</h3>
+                            <button onclick="exportTableToCSV('table-mikrotik', 'mikrotik_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
+                        </div>
+                        <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
                     </div>
                     <div class="overflow-x-auto">
-                        <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600">
-                            <thead class="bg-slate-50 text-slate-700 uppercase font-semibold">
+                        <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
                                 <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100"></tbody>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -237,15 +261,15 @@
 
         <!-- ================= BRANCH TAB ================= -->
         <div id="tab-branch" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Branch Management</h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Overview of active branch locations, team heads, and direct ISP connections.</p>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Branch Management</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Overview of active branch locations, team heads, and direct ISP connections.</p>
                 </div>
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <div class="relative flex-1 sm:flex-initial">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="search-branch" oninput="filterCards('branch')" placeholder="Search branches..." class="text-xs border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 w-full sm:w-60 shadow-sm font-medium">
+                        <input type="text" id="search-branch" oninput="filterCards('branch')" placeholder="Search branches..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60 shadow-sm font-medium">
                     </div>
                     <button onclick="openModal('branch', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 whitespace-nowrap flex items-center justify-center space-x-1.5">
                         <i class="fa-solid fa-plus"></i><span>Add Branch</span>
@@ -257,15 +281,15 @@
 
         <!-- ================= DELIVERY HUB TAB ================= -->
         <div id="tab-hub" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Delivery Hub Management</h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Overview of central sorting facilities, team heads, and direct ISP connections.</p>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Delivery Hub Management</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Overview of central sorting facilities, team heads, and direct ISP connections.</p>
                 </div>
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <div class="relative flex-1 sm:flex-initial">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="search-hub" oninput="filterCards('hub')" placeholder="Search hubs..." class="text-xs border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 w-full sm:w-60 shadow-sm font-medium">
+                        <input type="text" id="search-hub" oninput="filterCards('hub')" placeholder="Search hubs..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60 shadow-sm font-medium">
                     </div>
                     <button onclick="openModal('hub', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 whitespace-nowrap flex items-center justify-center space-x-1.5">
                         <i class="fa-solid fa-plus"></i><span>Add Delivery Hub</span>
@@ -277,26 +301,29 @@
 
         <!-- ================= CCTV TAB ================= -->
         <div id="tab-cctv" class="tab-content hidden space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">CCTV Systems Inventory</h2>
-                    <p class="text-sm text-slate-500 mt-0.5">Monitor surveillance streams, storage capacities, and security credentials.</p>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">CCTV Systems Inventory</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Monitor surveillance streams, storage capacities, and security credentials.</p>
                 </div>
                 <button onclick="openModal('cctv', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-plus"></i><span>Add CCTV Unit</span>
                 </button>
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <h3 class="font-bold text-slate-800 text-sm">Surveillance Network</h3>
-                    <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 w-full sm:w-52">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Surveillance Network</h3>
+                        <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
+                    </div>
+                    <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
                 </div>
                 <div class="overflow-x-auto">
-                    <table id="table-cctv" class="w-full text-left text-xs text-slate-600">
-                        <thead class="bg-slate-50 text-slate-700 uppercase font-semibold">
+                    <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
                             <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100"></tbody>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                     </table>
                 </div>
             </div>
@@ -306,14 +333,14 @@
 
     <!-- Dynamic Add/Edit Modal -->
     <div id="assetModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-7 shadow-2xl space-y-5 animate-scale border border-slate-100">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h3 id="modalTitle" class="font-bold text-slate-800 text-base">Record Form</h3>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-7 shadow-2xl space-y-5 animate-scale border border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <h3 id="modalTitle" class="font-bold text-slate-800 dark:text-slate-100 text-base">Record Form</h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="modalBody" class="space-y-3.5 max-h-[65vh] overflow-y-auto pr-2"></div>
-            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
-                <button onclick="closeModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button onclick="closeModal()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
                 <button onclick="saveRecord()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20">Save Record</button>
             </div>
         </div>
@@ -321,22 +348,22 @@
 
     <!-- Custom Warning Modal -->
     <div id="warningModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl text-center space-y-4 animate-scale border border-slate-100">
-            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center space-y-4 animate-scale border border-slate-100 dark:border-slate-800">
+            <div class="w-14 h-14 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <div>
-                <h3 id="warningTitle" class="text-base font-bold text-slate-800">Confirm Deletion</h3>
-                <p id="warningText" class="text-xs text-slate-500 mt-1 leading-relaxed">Are you sure you want to delete this record?</p>
+                <h3 id="warningTitle" class="text-base font-bold text-slate-800 dark:text-slate-100">Confirm Deletion</h3>
+                <p id="warningText" class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">Are you sure you want to delete this record?</p>
             </div>
             <div class="flex space-x-3 pt-2">
-                <button onclick="closeWarningModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
+                <button onclick="closeWarningModal()" class="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
                 <button id="warningConfirmBtn" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-rose-600/20">Proceed</button>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-auto">
-        &copy; 2026 LBC Express Asset Inventory Management System. Cloud Enabled.
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400 mt-auto transition-colors duration-200">
+        &copy; 2026 Asset Inventory Management System - Jerome. Cloud Enabled.
     </footer>
 
     <!-- App Logic Script -->
@@ -346,6 +373,21 @@
         let currentModalMode = 'add';
         let editingRecordId = null;
         let pendingAction = null;
+        window.activeRecords = {}; 
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-moon text-amber-400 text-sm';
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-amber-300 text-sm';
+            }
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => {
@@ -373,13 +415,13 @@
             document.querySelectorAll('.device-sub-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.device-sub-btn').forEach(el => {
                 el.classList.remove('bg-red-600', 'text-white', 'shadow-sm');
-                el.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+                el.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300', 'border', 'border-slate-200', 'dark:border-slate-800');
             });
 
             document.getElementById('sub-tab-' + subId).classList.remove('hidden');
             const activeBtn = document.getElementById('sub-nav-' + subId);
             activeBtn.classList.add('bg-red-600', 'text-white', 'shadow-sm');
-            activeBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+            activeBtn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300', 'border', 'border-slate-200', 'dark:border-slate-800');
 
             const addBtn = document.getElementById('addDeviceBtn');
             if (subId === 'computer') {
@@ -397,6 +439,7 @@
         // Firebase Cloud Sync Operations
         async function loadAllDataFromFirebase() {
             try {
+                window.activeRecords = {};
                 await loadCollectionIntoTable('computers', 'table-computer', renderComputerRow);
                 await loadCollectionIntoTable('faceRecognition', 'table-facerecog', renderFaceRecogRow);
                 await loadCollectionIntoTable('mikrotik', 'table-mikrotik', renderMikrotikRow);
@@ -418,6 +461,7 @@
             tbody.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
+                window.activeRecords[docSnap.id] = data;
                 tbody.appendChild(renderFn(docSnap.id, data));
             });
         }
@@ -428,6 +472,7 @@
             grid.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
+                window.activeRecords[docSnap.id] = data;
                 grid.appendChild(renderFn(docSnap.id, data));
             });
         }
@@ -437,18 +482,18 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-medium text-slate-800">${data.tseName||'-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.tseName||'-'}</td>
                 <td class="p-3.5">${data.businessUnit||'-'}</td>
                 <td class="p-3.5">${data.region||'-'}</td>
                 <td class="p-3.5">${data.area||'-'}</td>
-                <td class="p-3.5 font-mono font-bold text-red-600">${data.branchCode||'-'}</td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
                 <td class="p-3.5">${data.location||'-'}</td>
                 <td class="p-3.5">${data.description||'-'}</td>
                 <td class="p-3.5 font-mono">${data.assetTag||'-'}</td>
                 <td class="p-3.5 font-mono text-xs">${data.serial||'-'}</td>
                 <td class="p-3.5">${data.model||'-'}</td>
                 <td class="p-3.5">${data.category||'-'}</td>
-                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">${data.actualStatus||'Active'}</span></td>
+                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">${data.actualStatus||'Active'}</span></td>
                 <td class="p-3.5">${data.ptuStatus||'-'}</td>
                 <td class="p-3.5 font-mono">${data.branchTin||'-'}</td>
                 <td class="p-3.5">${data.machineType||'-'}</td>
@@ -459,12 +504,12 @@
                 <td class="p-3.5 font-mono">${data.osTicket||'-'}</td>
                 <td class="p-3.5">${data.hefRec||'-'}</td>
                 <td class="p-3.5">${data.replacedSerial||'-'}</td>
-                <td class="p-3.5 text-emerald-600 font-bold">${data.soti||'Yes'}</td>
-                <td class="p-3.5 text-emerald-600 font-bold">${data.sophos||'Yes'}</td>
+                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.soti||'Yes'}</td>
+                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.sophos||'Yes'}</td>
                 <td class="p-3.5">${data.itams||'Verified'}</td>
                 <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
                 </td>`;
             return tr;
         }
@@ -474,15 +519,15 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800">${data.branchName||'-'}</td>
-                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
-                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">Online</span></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
+                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
+                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
                 </td>`;
             return tr;
         }
@@ -492,15 +537,15 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800">${data.branchName||'-'}</td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress||'-'}</button></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
-                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">Online</span></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress||'-'}</button></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
+                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
                 </td>`;
             return tr;
         }
@@ -510,17 +555,17 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800">${data.branchName||'-'}</td>
-                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
+                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
                 <td class="p-3.5">${data.cameraCount||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-700">${data.storage||'-'}</td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
-                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full">Online</span></td>
+                <td class="p-3.5 font-medium text-slate-700 dark:text-slate-300">${data.storage||'-'}</td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
+                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
                 </td>`;
             return tr;
         }
@@ -529,24 +574,24 @@
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
             div.setAttribute('data-branch-code', data.branchCode || '');
-            div.className = "bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between";
+            div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
             div.innerHTML = `
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-slate-800 text-base">${data.branchName||'-'}</h3>
-                        <span class="bg-red-50 text-red-700 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName||'-'}</h3>
+                        <span class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
                     </div>
-                    <p class="text-xs text-slate-500 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
-                    <div class="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
-                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800">${data.teamHead||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700">${data.contactNo||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
-                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 pt-2 font-medium text-slate-700"><span>Computers Issued:</span><span class="branch-comp-count font-bold text-red-600">0</span></div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
+                    <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
+                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Computers Issued:</span><span class="branch-comp-count font-bold text-red-600 dark:text-red-400">0</span></div>
                     </div>
                 </div>
-                <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end space-x-2">
-                    <button onclick="openModal('branch', 'edit', '${id}')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
-                    <button onclick="deleteCloudRecord('branches', '${id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
+                <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
+                    <button onclick="openModal('branch', 'edit', '${id}')" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
+                    <button onclick="deleteCloudRecord('branches', '${id}')" class="text-xs bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
                 </div>`;
             return div;
         }
@@ -554,23 +599,23 @@
         function renderHubCard(id, data) {
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
-            div.className = "bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between";
+            div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
             div.innerHTML = `
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-slate-800 text-base">${data.branchName||'-'}</h3>
-                        <span class="bg-purple-100 text-purple-700 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName||'-'}</h3>
+                        <span class="bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
                     </div>
-                    <p class="text-xs text-slate-500 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
-                    <div class="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
-                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800">${data.teamHead||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700">${data.contactNo||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
+                    <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
                     </div>
                 </div>
-                <div class="mt-6 pt-3 border-t border-slate-100 flex justify-end space-x-2">
-                    <button onclick="openModal('hub', 'edit', '${id}')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
-                    <button onclick="deleteCloudRecord('hubs', '${id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
+                <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
+                    <button onclick="openModal('hub', 'edit', '${id}')" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
+                    <button onclick="deleteCloudRecord('hubs', '${id}')" class="text-xs bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
                 </div>`;
             return div;
         }
@@ -620,46 +665,48 @@
             modal.classList.add('flex');
             title.innerText = `${mode === 'edit' ? 'Edit' : 'Add New'} ${type.toUpperCase()}`;
 
+            const data = (mode === 'edit' && recordId) ? (window.activeRecords[recordId] || {}) : {};
+
             if (type === 'computer') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div><label class="block font-semibold uppercase mb-1">TSE Name</label><input type="text" id="m-tseName" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Business Unit</label><input type="text" id="m-businessUnit" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Region</label><input type="text" id="m-region" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Area</label><input type="text" id="m-area" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" placeholder="e.g. RPT01" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Description</label><input type="text" id="m-description" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Asset Tag</label><input type="text" id="m-assetTag" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Serial</label><input type="text" id="m-serial" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Model</label><input type="text" id="m-model" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Category</label><input type="text" id="m-category" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Actual Status</label><input type="text" id="m-actualStatus" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50" value="Active"></div>
-                        <div><label class="block font-semibold uppercase mb-1">PTU Status</label><input type="text" id="m-ptuStatus" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Branch TIN</label><input type="text" id="m-branchTin" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Machine Type</label><input type="text" id="m-machineType" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Processor</label><input type="text" id="m-processor" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">OS Version</label><input type="text" id="m-osVersion" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Device Family</label><input type="text" id="m-deviceFamily" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Host ID / Name</label><input type="text" id="m-hostId" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                        <div><label class="block font-semibold uppercase mb-1">OS Ticket #</label><input type="text" id="m-osTicket" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
+                        <div><label class="block font-semibold uppercase mb-1">TSE Name</label><input type="text" id="m-tseName" value="${data.tseName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Business Unit</label><input type="text" id="m-businessUnit" value="${data.businessUnit||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Region</label><input type="text" id="m-region" value="${data.region||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Area</label><input type="text" id="m-area" value="${data.area||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" placeholder="e.g. RPT01" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Description</label><input type="text" id="m-description" value="${data.description||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Asset Tag</label><input type="text" id="m-assetTag" value="${data.assetTag||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Serial</label><input type="text" id="m-serial" value="${data.serial||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Model</label><input type="text" id="m-model" value="${data.model||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Category</label><input type="text" id="m-category" value="${data.category||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Actual Status</label><input type="text" id="m-actualStatus" value="${data.actualStatus||'Active'}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">PTU Status</label><input type="text" id="m-ptuStatus" value="${data.ptuStatus||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Branch TIN</label><input type="text" id="m-branchTin" value="${data.branchTin||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Machine Type</label><input type="text" id="m-machineType" value="${data.machineType||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Processor</label><input type="text" id="m-processor" value="${data.processor||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">OS Version</label><input type="text" id="m-osVersion" value="${data.osVersion||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Device Family</label><input type="text" id="m-deviceFamily" value="${data.deviceFamily||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Host ID / Name</label><input type="text" id="m-hostId" value="${data.hostId||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">OS Ticket #</label><input type="text" id="m-osTicket" value="${data.osTicket||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
                     </div>`;
             } else if (['facerecog', 'mikrotik', 'cctv'].includes(type)) {
                 body.innerHTML = `
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">IP Address</label><input type="text" id="m-ipAddress" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    ${type === 'cctv' ? '<div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-semibold uppercase mb-1">Camera Count</label><input type="text" id="m-cameraCount" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div><div><label class="block text-xs font-semibold uppercase mb-1">Storage</label><input type="text" id="m-storage" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div></div>' : ''}
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Username</label><input type="text" id="m-username" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Password</label><input type="password" id="m-password" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>`;
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    ${type === 'cctv' ? `<div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-semibold uppercase mb-1">Camera Count</label><input type="text" id="m-cameraCount" value="\${data.cameraCount||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div><div><label class="block text-xs font-semibold uppercase mb-1">Storage</label><input type="text" id="m-storage" value="\${data.storage||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div></div>` : ''}
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Username</label><input type="text" id="m-username" value="${data.username||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Password</label><input type="password" id="m-password" value="${data.password||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>`;
             } else if (type === 'branch' || type === 'hub') {
                 body.innerHTML = `
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Team Head</label><input type="text" id="m-teamHead" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Contact Number</label><input type="text" id="m-contactNo" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">ISP</label><select id="m-isp" class="w-full text-xs border rounded-xl px-3 py-2.5 bg-slate-50"><option>PLDT</option><option>Globe</option><option>Converge</option></select></div>`;
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">ISP</label><select id="m-isp" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"><option ${data.isp==='PLDT'?'selected':''}>PLDT</option><option ${data.isp==='Globe'?'selected':''}>Globe</option><option ${data.isp==='Converge'?'selected':''}>Converge</option></select></div>`;
             }
         }
 
@@ -727,6 +774,30 @@
             closeWarningModal();
         };
 
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                let cols = row.querySelectorAll('th, td');
+                let data = [];
+                for (let i = 0; i < cols.length - 1; i++) {
+                    let text = cols[i].innerText.replace(/"/g, '""');
+                    data.push('"' + text + '"');
+                }
+                csv.push(data.join(','));
+            });
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+        }
+
         function filterCards(type) {
             const input = document.getElementById(`search-${type}`);
             const filter = input.value.toLowerCase();
@@ -779,7 +850,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `lbc_enterprise_inventory_${new Date().toISOString().slice(0,10)}.json`);
+            downloadAnchor.setAttribute("download", `jerome_asset_inventory_${new Date().toISOString().slice(0,10)}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
