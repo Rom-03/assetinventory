@@ -43,7 +43,22 @@
       window.updateDoc = updateDoc;
 
       window.addEventListener('DOMContentLoaded', () => {
+          const savedTheme = localStorage.getItem('jerome_theme') || 'light';
+          if (savedTheme === 'dark') {
+              document.documentElement.classList.remove('light');
+              document.documentElement.classList.add('dark');
+              const icon = document.getElementById('theme-icon');
+              if(icon) icon.className = 'fa-solid fa-sun text-amber-300 text-xs sm:text-sm';
+          }
+
           loadAllDataFromFirebase();
+
+          const savedTab = localStorage.getItem('jerome_active_tab') || 'dashboard';
+          const savedSubTab = localStorage.getItem('jerome_active_subtab') || 'computer';
+          switchTab(savedTab, false);
+          if(savedTab === 'devices') {
+              switchDeviceSubTab(savedSubTab, false);
+          }
       });
     </script>
 
@@ -68,37 +83,37 @@
 
     <!-- Top Navigation Header -->
     <header class="bg-slate-900 dark:bg-slate-900 text-white shadow-lg sticky top-0 z-40 border-b border-slate-800">
-        <div class="w-full px-4 sm:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gradient-to-br from-red-600 to-red-700 p-2.5 rounded-xl text-white shadow-md shadow-red-900/30 flex items-center justify-center">
-                    <i class="fa-solid fa-boxes-stacked text-lg"></i>
+        <div class="w-full px-3 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="bg-gradient-to-br from-red-600 to-red-700 p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-white shadow-md shadow-red-900/30 flex items-center justify-center">
+                    <i class="fa-solid fa-boxes-stacked text-xs sm:text-base"></i>
                 </div>
                 <div>
-                    <span class="text-lg font-bold tracking-tight block leading-tight">Asset Inventory</span>
-                    <span class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">Jerome Cloud Platform</span>
+                    <span class="text-xs sm:text-base font-bold tracking-tight block leading-tight">Asset Inventory</span>
+                    <span class="text-[8px] sm:text-[9px] text-slate-400 font-medium tracking-wider uppercase">Jerome Cloud Platform</span>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-2 sm:space-x-3">
+            <div class="flex items-center space-x-1.5 sm:space-x-3">
                 <!-- Dark Mode Toggle -->
-                <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-2 rounded-xl border border-slate-700 text-xs flex items-center justify-center transition-all mr-1" title="Toggle Dark/Light Mode">
-                    <i id="theme-icon" class="fa-solid fa-moon text-amber-400 text-sm"></i>
+                <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-slate-700 text-xs flex items-center justify-center transition-all" title="Toggle Dark/Light Mode">
+                    <i id="theme-icon" class="fa-solid fa-moon text-amber-400 text-xs sm:text-sm"></i>
                 </button>
 
                 <!-- Data Tools -->
-                <button onclick="exportDataJSON()" class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-slate-700/80 shadow-sm" title="Export Backup">
-                    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i><span class="hidden sm:inline">Export JSON</span>
+                <button onclick="exportDataJSON()" class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg font-medium transition-all flex items-center space-x-1 border border-slate-700/80 shadow-sm" title="Export Backup">
+                    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i><span class="hidden md:inline">Export JSON</span>
                 </button>
-                <label class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-slate-700/80 shadow-sm cursor-pointer" title="Import Backup">
-                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i><span class="hidden sm:inline">Import JSON</span>
+                <label class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg font-medium transition-all flex items-center space-x-1 border border-slate-700/80 shadow-sm cursor-pointer" title="Import Backup">
+                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i><span class="hidden md:inline">Import JSON</span>
                     <input type="file" id="importFile" accept=".json" onchange="importDataJSON(event)" class="hidden">
                 </label>
-                <button onclick="confirmSystemReset()" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs px-3 py-2 rounded-lg font-medium transition-all flex items-center space-x-1.5 border border-rose-900/50 shadow-sm" title="Clear All Data">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span class="hidden sm:inline">Reset</span>
+                <button onclick="confirmSystemReset()" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg font-medium transition-all flex items-center space-x-1 border border-rose-900/50 shadow-sm" title="Clear All Data">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span class="hidden md:inline">Reset</span>
                 </button>
 
-                <div class="flex items-center space-x-2.5 border-l border-slate-800 pl-3 ml-1">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-xs shadow-inner text-white">
+                <div class="flex items-center space-x-2 border-l border-slate-800 pl-2 sm:pl-3 ml-1">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 flex items-center justify-center font-bold text-[10px] sm:text-xs shadow-inner text-white">
                         J
                     </div>
                     <div class="hidden md:block text-left">
@@ -111,30 +126,30 @@
     </header>
 
     <!-- Main Navigation Tabs -->
-    <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-16 z-30 transition-colors duration-200">
-        <div class="w-full px-4 sm:px-8">
+    <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-14 sm:top-16 z-30 transition-colors duration-200">
+        <div class="w-full px-3 sm:px-8">
             <div class="flex space-x-1 sm:space-x-8 overflow-x-auto scrollbar-none">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-red-600 text-red-600 flex items-center space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-chart-pie text-sm"></i><span>Dashboard</span>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
+                    <i class="fa-solid fa-chart-pie text-xs sm:text-sm"></i><span>Dashboard</span>
                 </button>
-                <button onclick="switchTab('devices')" id="nav-devices" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-laptop text-sm"></i><span>Devices</span>
+                <button onclick="switchTab('devices')" id="nav-devices" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
+                    <i class="fa-solid fa-laptop text-xs sm:text-sm"></i><span>Devices</span>
                 </button>
-                <button onclick="switchTab('branch')" id="nav-branch" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-store text-sm"></i><span>Branch</span>
+                <button onclick="switchTab('branch')" id="nav-branch" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
+                    <i class="fa-solid fa-store text-xs sm:text-sm"></i><span>Branch</span>
                 </button>
-                <button onclick="switchTab('hub')" id="nav-hub" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-warehouse text-sm"></i><span>Delivery Hub</span>
+                <button onclick="switchTab('hub')" id="nav-hub" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
+                    <i class="fa-solid fa-warehouse text-xs sm:text-sm"></i><span>Delivery Hub</span>
                 </button>
-                <button onclick="switchTab('cctv')" id="nav-cctv" class="tab-btn py-4 px-3 border-b-2 font-semibold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-video text-sm"></i><span>CCTV</span>
+                <button onclick="switchTab('cctv')" id="nav-cctv" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
+                    <i class="fa-solid fa-video text-xs sm:text-sm"></i><span>CCTV</span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Full Screen Content Area -->
-    <main class="w-full px-4 sm:px-8 py-6 flex-1 animate-fade">
+    <main class="w-full px-3 sm:px-8 py-5 sm:py-6 flex-1 animate-fade">
 
         <!-- ================= DASHBOARD TAB ================= -->
         <div id="tab-dashboard" class="tab-content space-y-6">
@@ -381,15 +396,17 @@
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 html.classList.add('light');
-                icon.className = 'fa-solid fa-moon text-amber-400 text-sm';
+                localStorage.setItem('jerome_theme', 'light');
+                icon.className = 'fa-solid fa-moon text-amber-400 text-xs sm:text-sm';
             } else {
                 html.classList.remove('light');
                 html.classList.add('dark');
-                icon.className = 'fa-solid fa-sun text-amber-300 text-sm';
+                localStorage.setItem('jerome_theme', 'dark');
+                icon.className = 'fa-solid fa-sun text-amber-300 text-xs sm:text-sm';
             }
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, saveState = true) {
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.add('hidden');
                 el.classList.remove('animate-fade');
@@ -400,17 +417,25 @@
             });
 
             const activeTab = document.getElementById('tab-' + tabId);
-            activeTab.classList.remove('hidden');
-            activeTab.classList.add('animate-fade');
+            if(activeTab) {
+                activeTab.classList.remove('hidden');
+                activeTab.classList.add('animate-fade');
+            }
 
             const activeBtn = document.getElementById('nav-' + tabId);
-            activeBtn.classList.add('border-red-600', 'text-red-600');
-            activeBtn.classList.remove('border-transparent', 'text-slate-500');
+            if(activeBtn) {
+                activeBtn.classList.add('border-red-600', 'text-red-600');
+                activeBtn.classList.remove('border-transparent', 'text-slate-500');
+            }
+
+            if (saveState) {
+                localStorage.setItem('jerome_active_tab', tabId);
+            }
 
             if(tabId === 'dashboard') updateDashboardStats();
         }
 
-        function switchDeviceSubTab(subId) {
+        function switchDeviceSubTab(subId, saveState = true) {
             currentDeviceSubTab = subId;
             document.querySelectorAll('.device-sub-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.device-sub-btn').forEach(el => {
@@ -418,21 +443,31 @@
                 el.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300', 'border', 'border-slate-200', 'dark:border-slate-800');
             });
 
-            document.getElementById('sub-tab-' + subId).classList.remove('hidden');
+            const subTabEl = document.getElementById('sub-tab-' + subId);
+            if(subTabEl) subTabEl.classList.remove('hidden');
+
             const activeBtn = document.getElementById('sub-nav-' + subId);
-            activeBtn.classList.add('bg-red-600', 'text-white', 'shadow-sm');
-            activeBtn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300', 'border', 'border-slate-200', 'dark:border-slate-800');
+            if(activeBtn) {
+                activeBtn.classList.add('bg-red-600', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300', 'border', 'border-slate-200', 'dark:border-slate-800');
+            }
+
+            if (saveState) {
+                localStorage.setItem('jerome_active_subtab', subId);
+            }
 
             const addBtn = document.getElementById('addDeviceBtn');
-            if (subId === 'computer') {
-                addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Computer Record</span>';
-                addBtn.setAttribute('onclick', "openModal('computer', 'add')");
-            } else if (subId === 'facerecog') {
-                addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Face Recognition Device</span>';
-                addBtn.setAttribute('onclick', "openModal('facerecog', 'add')");
-            } else if (subId === 'mikrotik') {
-                addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Mikrotik Router</span>';
-                addBtn.setAttribute('onclick', "openModal('mikrotik', 'add')");
+            if (addBtn) {
+                if (subId === 'computer') {
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Computer Record</span>';
+                    addBtn.setAttribute('onclick', "openModal('computer', 'add')");
+                } else if (subId === 'facerecog') {
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Face Recognition Device</span>';
+                    addBtn.setAttribute('onclick', "openModal('facerecog', 'add')");
+                } else if (subId === 'mikrotik') {
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Mikrotik Router</span>';
+                    addBtn.setAttribute('onclick', "openModal('mikrotik', 'add')");
+                }
             }
         }
 
@@ -458,6 +493,7 @@
         async function loadCollectionIntoTable(colName, tableId, renderFn) {
             const querySnapshot = await window.getDocs(window.collection(window.firebaseDb, colName));
             const tbody = document.querySelector(`#${tableId} tbody`);
+            if(!tbody) return;
             tbody.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
@@ -469,6 +505,7 @@
         async function loadCollectionIntoCards(colName, gridId, renderFn) {
             const querySnapshot = await window.getDocs(window.collection(window.firebaseDb, colName));
             const grid = document.getElementById(gridId);
+            if(!grid) return;
             grid.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
@@ -482,31 +519,31 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.tseName||'-'}</td>
-                <td class="p-3.5">${data.businessUnit||'-'}</td>
-                <td class="p-3.5">${data.region||'-'}</td>
-                <td class="p-3.5">${data.area||'-'}</td>
-                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
-                <td class="p-3.5">${data.location||'-'}</td>
-                <td class="p-3.5">${data.description||'-'}</td>
-                <td class="p-3.5 font-mono">${data.assetTag||'-'}</td>
-                <td class="p-3.5 font-mono text-xs">${data.serial||'-'}</td>
-                <td class="p-3.5">${data.model||'-'}</td>
-                <td class="p-3.5">${data.category||'-'}</td>
-                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">${data.actualStatus||'Active'}</span></td>
-                <td class="p-3.5">${data.ptuStatus||'-'}</td>
-                <td class="p-3.5 font-mono">${data.branchTin||'-'}</td>
-                <td class="p-3.5">${data.machineType||'-'}</td>
-                <td class="p-3.5">${data.processor||'-'}</td>
-                <td class="p-3.5">${data.osVersion||'-'}</td>
-                <td class="p-3.5">${data.deviceFamily||'-'}</td>
-                <td class="p-3.5 font-mono">${data.hostId||'-'}</td>
-                <td class="p-3.5 font-mono">${data.osTicket||'-'}</td>
-                <td class="p-3.5">${data.hefRec||'-'}</td>
-                <td class="p-3.5">${data.replacedSerial||'-'}</td>
-                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.soti||'Yes'}</td>
-                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.sophos||'Yes'}</td>
-                <td class="p-3.5">${data.itams||'Verified'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.tseName || '-'}</td>
+                <td class="p-3.5">${data.businessUnit || '-'}</td>
+                <td class="p-3.5">${data.region || '-'}</td>
+                <td class="p-3.5">${data.area || '-'}</td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || '-'}</td>
+                <td class="p-3.5">${data.location || '-'}</td>
+                <td class="p-3.5">${data.description || '-'}</td>
+                <td class="p-3.5 font-mono">${data.assetTag || '-'}</td>
+                <td class="p-3.5 font-mono text-xs">${data.serial || '-'}</td>
+                <td class="p-3.5">${data.model || '-'}</td>
+                <td class="p-3.5">${data.category || '-'}</td>
+                <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">${data.actualStatus || 'Active'}</span></td>
+                <td class="p-3.5">${data.ptuStatus || '-'}</td>
+                <td class="p-3.5 font-mono">${data.branchTin || '-'}</td>
+                <td class="p-3.5">${data.machineType || '-'}</td>
+                <td class="p-3.5">${data.processor || '-'}</td>
+                <td class="p-3.5">${data.osVersion || '-'}</td>
+                <td class="p-3.5">${data.deviceFamily || '-'}</td>
+                <td class="p-3.5 font-mono">${data.hostId || '-'}</td>
+                <td class="p-3.5 font-mono">${data.osTicket || '-'}</td>
+                <td class="p-3.5">${data.hefRec || '-'}</td>
+                <td class="p-3.5">${data.replacedSerial || '-'}</td>
+                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.soti || 'Yes'}</td>
+                <td class="p-3.5 text-emerald-600 dark:text-emerald-400 font-bold">${data.sophos || 'Yes'}</td>
+                <td class="p-3.5">${data.itams || 'Verified'}</td>
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
@@ -519,10 +556,10 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
-                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || '-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName || '-'}</td>
+                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress || '-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username || '-'}</button></td>
                 <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
                 <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
@@ -537,10 +574,10 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress||'-'}</button></td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || '-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName || '-'}</td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress || '-'}</button></td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username || '-'}</button></td>
                 <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
                 <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
@@ -555,12 +592,12 @@
             tr.setAttribute('data-id', id);
             tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
-                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName||'-'}</td>
-                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress||'-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
-                <td class="p-3.5">${data.cameraCount||'-'}</td>
-                <td class="p-3.5 font-medium text-slate-700 dark:text-slate-300">${data.storage||'-'}</td>
-                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username||'-'}</button></td>
+                <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || '-'}</td>
+                <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName || '-'}</td>
+                <td class="p-3.5"><a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress || '-'} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a></td>
+                <td class="p-3.5">${data.cameraCount || '-'}</td>
+                <td class="p-3.5 font-medium text-slate-700 dark:text-slate-300">${data.storage || '-'}</td>
+                <td class="p-3.5"><button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username || '-'}</button></td>
                 <td class="p-3.5"><button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button></td>
                 <td class="p-3.5"><span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full">Online</span></td>
                 <td class="p-3.5 text-right space-x-1">
@@ -578,14 +615,14 @@
             div.innerHTML = `
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName||'-'}</h3>
-                        <span class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName || '-'}</h3>
+                        <span class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode || '-'}</span>
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location || '-'}</p>
                     <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead || '-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo || '-'}</span></div>
+                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp || '-'}</span></div>
                         <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Computers Issued:</span><span class="branch-comp-count font-bold text-red-600 dark:text-red-400">0</span></div>
                     </div>
                 </div>
@@ -603,14 +640,14 @@
             div.innerHTML = `
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName||'-'}</h3>
-                        <span class="bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode||'-'}</span>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName || '-'}</h3>
+                        <span class="bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode || '-'}</span>
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location||'-'}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i> ${data.location || '-'}</p>
                     <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 pt-3">
-                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo||'-'}</span></div>
-                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded">${data.isp||'-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead || '-'}</span></div>
+                        <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo || '-'}</span></div>
+                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded">${data.isp || '-'}</span></div>
                     </div>
                 </div>
                 <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
@@ -633,10 +670,15 @@
         }
 
         function updateDashboardStats() {
-            document.getElementById('stat-devices').innerText = document.querySelectorAll('#table-computer tbody tr').length + document.querySelectorAll('#table-facerecog tbody tr').length + document.querySelectorAll('#table-mikrotik tbody tr').length;
-            document.getElementById('stat-branches').innerText = document.querySelectorAll('#branch-cards-grid > div').length;
-            document.getElementById('stat-hubs').innerText = document.querySelectorAll('#hub-cards-grid > div').length;
-            document.getElementById('stat-cctv').innerText = document.querySelectorAll('#table-cctv tbody tr').length;
+            const devStat = document.getElementById('stat-devices');
+            const branchStat = document.getElementById('stat-branches');
+            const hubStat = document.getElementById('stat-hubs');
+            const cctvStat = document.getElementById('stat-cctv');
+
+            if(devStat) devStat.innerText = document.querySelectorAll('#table-computer tbody tr').length + document.querySelectorAll('#table-facerecog tbody tr').length + document.querySelectorAll('#table-mikrotik tbody tr').length;
+            if(branchStat) branchStat.innerText = document.querySelectorAll('#branch-cards-grid > div').length;
+            if(hubStat) hubStat.innerText = document.querySelectorAll('#hub-cards-grid > div').length;
+            if(cctvStat) cctvStat.innerText = document.querySelectorAll('#table-cctv tbody tr').length;
         }
 
         function updateBranchComputerCounts() {
@@ -670,42 +712,48 @@
             if (type === 'computer') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div><label class="block font-semibold uppercase mb-1">TSE Name</label><input type="text" id="m-tseName" value="${data.tseName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Business Unit</label><input type="text" id="m-businessUnit" value="${data.businessUnit||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Region</label><input type="text" id="m-region" value="${data.region||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Area</label><input type="text" id="m-area" value="${data.area||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" placeholder="e.g. RPT01" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Description</label><input type="text" id="m-description" value="${data.description||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Asset Tag</label><input type="text" id="m-assetTag" value="${data.assetTag||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Serial</label><input type="text" id="m-serial" value="${data.serial||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Model</label><input type="text" id="m-model" value="${data.model||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Category</label><input type="text" id="m-category" value="${data.category||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Actual Status</label><input type="text" id="m-actualStatus" value="${data.actualStatus||'Active'}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">PTU Status</label><input type="text" id="m-ptuStatus" value="${data.ptuStatus||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Branch TIN</label><input type="text" id="m-branchTin" value="${data.branchTin||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Machine Type</label><input type="text" id="m-machineType" value="${data.machineType||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Processor</label><input type="text" id="m-processor" value="${data.processor||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">OS Version</label><input type="text" id="m-osVersion" value="${data.osVersion||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Device Family</label><input type="text" id="m-deviceFamily" value="${data.deviceFamily||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">Host ID / Name</label><input type="text" id="m-hostId" value="${data.hostId||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                        <div><label class="block font-semibold uppercase mb-1">OS Ticket #</label><input type="text" id="m-osTicket" value="${data.osTicket||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">TSE Name</label><input type="text" id="m-tseName" value="${data.tseName || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Business Unit</label><input type="text" id="m-businessUnit" value="${data.businessUnit || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Region</label><input type="text" id="m-region" value="${data.region || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Area</label><input type="text" id="m-area" value="${data.area || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" placeholder="e.g. RPT01" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Description</label><input type="text" id="m-description" value="${data.description || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Asset Tag</label><input type="text" id="m-assetTag" value="${data.assetTag || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Serial</label><input type="text" id="m-serial" value="${data.serial || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Model</label><input type="text" id="m-model" value="${data.model || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Category</label><input type="text" id="m-category" value="${data.category || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Actual Status</label><input type="text" id="m-actualStatus" value="${data.actualStatus || 'Active'}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">PTU Status</label><input type="text" id="m-ptuStatus" value="${data.ptuStatus || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Branch TIN</label><input type="text" id="m-branchTin" value="${data.branchTin || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Machine Type</label><input type="text" id="m-machineType" value="${data.machineType || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Processor</label><input type="text" id="m-processor" value="${data.processor || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">OS Version</label><input type="text" id="m-osVersion" value="${data.osVersion || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Device Family</label><input type="text" id="m-deviceFamily" value="${data.deviceFamily || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">Host ID / Name</label><input type="text" id="m-hostId" value="${data.hostId || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                        <div><label class="block font-semibold uppercase mb-1">OS Ticket #</label><input type="text" id="m-osTicket" value="${data.osTicket || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
                     </div>`;
             } else if (['facerecog', 'mikrotik', 'cctv'].includes(type)) {
+                let extraFields = '';
+                if (type === 'cctv') {
+                    const camVal = data.cameraCount || '';
+                    const storVal = data.storage || '';
+                    extraFields = '<div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-semibold uppercase mb-1">Camera Count</label><input type="text" id="m-cameraCount" value="' + camVal + '" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div><div><label class="block text-xs font-semibold uppercase mb-1">Storage</label><input type="text" id="m-storage" value="' + storVal + '" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div></div>';
+                }
                 body.innerHTML = `
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    ${type === 'cctv' ? `<div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-semibold uppercase mb-1">Camera Count</label><input type="text" id="m-cameraCount" value="\${data.cameraCount||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div><div><label class="block text-xs font-semibold uppercase mb-1">Storage</label><input type="text" id="m-storage" value="\${data.storage||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div></div>` : ''}
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Username</label><input type="text" id="m-username" value="${data.username||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Password</label><input type="password" id="m-password" value="${data.password||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>`;
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    ${extraFields}
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>`;
             } else if (type === 'branch' || type === 'hub') {
                 body.innerHTML = `
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
-                    <div><label class="block text-xs font-semibold uppercase mb-1">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo||''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Location</label><input type="text" id="m-location" value="${data.location || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
+                    <div><label class="block text-xs font-semibold uppercase mb-1">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo || ''}" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"></div>
                     <div><label class="block text-xs font-semibold uppercase mb-1">ISP</label><select id="m-isp" class="w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100"><option ${data.isp==='PLDT'?'selected':''}>PLDT</option><option ${data.isp==='Globe'?'selected':''}>Globe</option><option ${data.isp==='Converge'?'selected':''}>Converge</option></select></div>`;
             }
         }
