@@ -19,7 +19,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyCJv-JSz5O9GHKToSxCtzu6TPVi6aPvtKY",
@@ -41,6 +41,7 @@
       window.doc = doc;
       window.deleteDoc = deleteDoc;
       window.updateDoc = updateDoc;
+      window.setDoc = setDoc;
 
       window.addEventListener('DOMContentLoaded', () => {
           const savedTheme = localStorage.getItem('jerome_theme') || 'light';
@@ -277,7 +278,7 @@
                     <div class="overflow-x-auto">
                         <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                             <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
+                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Firmware Version</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
@@ -373,6 +374,39 @@
         </div>
     </div>
 
+    <!-- Duplicate IP Alert Modal -->
+    <div id="duplicateIpModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4 animate-scale border border-amber-200 dark:border-amber-900/50">
+            <div class="w-14 h-14 bg-amber-50 dark:bg-amber-950/50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner border border-amber-200/50 dark:border-amber-800/50">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">IP Address Conflict</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    The IP address <span id="duplicateIpText" class="font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">0.0.0.0</span> already exists in this database collection!
+                </p>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2">Please provide a unique IP address to continue.</p>
+            </div>
+            <button onclick="closeDuplicateIpModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-amber-500/20">Got it</button>
+        </div>
+    </div>
+
+    <!-- Import Success Modal Popup -->
+    <div id="importSuccessModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4 animate-scale border border-emerald-200 dark:border-emerald-900/50">
+            <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner border border-emerald-200/50 dark:border-emerald-800/50">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Backup Restored Successfully</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                    Imported <span id="importCountText" class="font-bold text-emerald-600 dark:text-emerald-400">0</span> records across database collections. All data is synchronized and saved permanently.
+                </p>
+            </div>
+            <button onclick="closeImportSuccessModal()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-emerald-600/20">Done</button>
+        </div>
+    </div>
+
     <!-- Custom Warning Modal -->
     <div id="warningModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center space-y-4 animate-scale border border-slate-100 dark:border-slate-800">
@@ -400,7 +434,14 @@
         let currentModalMode = 'add';
         let editingRecordId = null;
         let pendingAction = null;
-        window.activeRecords = {}; 
+        window.dbCollections = {
+            computers: {},
+            faceRecognition: {},
+            mikrotik: {},
+            branches: {},
+            hubs: {},
+            cctv: {}
+        };
 
         function toggleDarkMode() {
             const html = document.documentElement;
@@ -494,7 +535,7 @@
         // Firebase Cloud Sync Operations
         async function loadAllDataFromFirebase() {
             try {
-                window.activeRecords = {};
+                window.dbCollections = { computers: {}, faceRecognition: {}, mikrotik: {}, branches: {}, hubs: {}, cctv: {} };
                 await loadCollectionIntoTable('computers', 'table-computer', renderComputerRow);
                 await loadCollectionIntoTable('faceRecognition', 'table-facerecog', renderFaceRecogRow);
                 await loadCollectionIntoTable('mikrotik', 'table-mikrotik', renderMikrotikRow);
@@ -517,7 +558,7 @@
             tbody.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                window.activeRecords[docSnap.id] = data;
+                window.dbCollections[colName][docSnap.id] = data;
                 tbody.appendChild(renderFn(docSnap.id, data));
             });
         }
@@ -529,7 +570,7 @@
             grid.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                window.activeRecords[docSnap.id] = data;
+                window.dbCollections[colName][docSnap.id] = data;
                 grid.appendChild(renderFn(docSnap.id, data));
             });
         }
@@ -601,6 +642,7 @@
             tr.setAttribute('data-branch', data.branchCode || '');
 
             const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
+            const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
             const passDisplay = data.password ? `<button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button>` : '';
 
@@ -608,6 +650,7 @@
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
                 <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.branchName || ''}</td>
                 <td class="p-3.5">${ipDisplay}</td>
+                <td class="p-3.5">${firmwareDisplay}</td>
                 <td class="p-3.5">${userDisplay}</td>
                 <td class="p-3.5">${passDisplay}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
@@ -749,7 +792,9 @@
             modal.classList.add('flex');
             title.innerText = `${mode === 'edit' ? 'Edit' : 'Add New'} ${type.toUpperCase()}`;
 
-            const data = (mode === 'edit' && recordId) ? (window.activeRecords[recordId] || {}) : {};
+            let colMap = type;
+            if (type === 'facerecog') colMap = 'faceRecognition';
+            const data = (mode === 'edit' && recordId) ? (window.dbCollections[colMap]?.[recordId] || {}) : {};
             const currentStatus = data.status || data.actualStatus || 'Online';
 
             const fieldClass = "w-full text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all";
@@ -822,19 +867,25 @@
                         <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
                         ${statusSelectHTML}
                     </div>`;
-            } else if (type === 'mikritik' || type === 'cctv') {
-                let extraFields = '';
-                if (type === 'cctv') {
-                    const camVal = data.cameraCount || '';
-                    const storVal = data.storage || '';
-                    extraFields = `<div><label class="${labelClass}">Camera Count</label><input type="text" id="m-cameraCount" value="${camVal}" class="${fieldClass}"></div><div><label class="${labelClass}">Storage</label><input type="text" id="m-storage" value="${storVal}" class="${fieldClass}"></div>`;
-                }
+            } else if (type === 'mikrotik') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="${fieldClass}"></div>
-                        ${extraFields}
+                        <div><label class="${labelClass}">Firmware Version</label><input type="text" id="m-firmwareVersion" value="${data.firmwareVersion || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
+                        ${statusSelectHTML}
+                    </div>`;
+            } else if (type === 'cctv') {
+                body.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Camera Count</label><input type="text" id="m-cameraCount" value="${data.cameraCount || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Storage</label><input type="text" id="m-storage" value="${data.storage || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
                         ${statusSelectHTML}
@@ -858,6 +909,30 @@
             document.getElementById('assetModal').classList.remove('flex');
         }
 
+        function showDuplicateIpModal(ipAddress) {
+            document.getElementById('duplicateIpText').innerText = ipAddress;
+            const modal = document.getElementById('duplicateIpModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDuplicateIpModal() {
+            document.getElementById('duplicateIpModal').classList.add('hidden');
+            document.getElementById('duplicateIpModal').classList.remove('flex');
+        }
+
+        function showImportSuccessModal(count) {
+            document.getElementById('importCountText').innerText = count;
+            const modal = document.getElementById('importSuccessModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeImportSuccessModal() {
+            document.getElementById('importSuccessModal').classList.add('hidden');
+            document.getElementById('importSuccessModal').classList.remove('flex');
+        }
+
         async function saveRecord() {
             const payload = {};
             document.querySelectorAll('#modalBody input, #modalBody select').forEach(input => {
@@ -871,6 +946,23 @@
             if (currentModalType === 'branch') colName = 'branches';
             if (currentModalType === 'hub') colName = 'hubs';
             if (currentModalType === 'cctv') colName = 'cctv';
+
+            // Check duplicate IP validation
+            if (payload.ipAddress && payload.ipAddress.trim() !== '') {
+                const targetIp = payload.ipAddress.trim();
+                const existingRecords = window.dbCollections[colName] || {};
+                
+                for (const [id, record] of Object.entries(existingRecords)) {
+                    if (record.ipAddress && record.ipAddress.trim() === targetIp) {
+                        // Allow if editing the exact same record
+                        if (currentModalMode === 'edit' && id === editingRecordId) {
+                            continue;
+                        }
+                        showDuplicateIpModal(targetIp);
+                        return;
+                    }
+                }
+            }
 
             try {
                 if (currentModalMode === 'edit' && editingRecordId) {
@@ -981,16 +1073,7 @@
         }
 
         function exportDataJSON() {
-            const data = {
-                computerTable: document.querySelector('#table-computer tbody').innerHTML,
-                faceRecogTable: document.querySelector('#table-facerecog tbody').innerHTML,
-                mikrotikTable: document.querySelector('#table-mikrotik tbody').innerHTML,
-                branchCards: document.querySelector('#branch-cards-grid').innerHTML,
-                hubCards: document.querySelector('#hub-cards-grid').innerHTML,
-                cctvTable: document.querySelector('#table-cctv tbody').innerHTML
-            };
-
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.dbCollections, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `jerome_asset_inventory_${new Date().toISOString().slice(0,10)}.json`);
@@ -1003,19 +1086,28 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.computerTable) document.querySelector('#table-computer tbody').innerHTML = data.computerTable;
-                    if (data.faceRecogTable) document.querySelector('#table-facerecog tbody').innerHTML = data.faceRecogTable;
-                    if (data.mikrotikTable) document.querySelector('#table-mikrotik tbody').innerHTML = data.mikrotikTable;
-                    if (data.branchCards) document.querySelector('#branch-cards-grid').innerHTML = data.branchCards;
-                    if (data.hubCards) document.querySelector('#hub-cards-grid').innerHTML = data.hubCards;
-                    if (data.cctvTable) document.querySelector('#table-cctv tbody').innerHTML = data.cctvTable;
-                    updateBranchComputerCounts();
-                    alert('Backup imported successfully!');
+                    const importedCollections = JSON.parse(e.target.result);
+                    if (!importedCollections || typeof importedCollections !== 'object') {
+                        throw new Error('Invalid format');
+                    }
+
+                    let importedCount = 0;
+                    for (const [colName, records] of Object.entries(importedCollections)) {
+                        if (records && typeof records === 'object') {
+                            for (const [docId, docData] of Object.entries(records)) {
+                                await window.setDoc(window.doc(window.firebaseDb, colName, docId), docData);
+                                importedCount++;
+                            }
+                        }
+                    }
+
+                    await loadAllDataFromFirebase();
+                    showImportSuccessModal(importedCount);
                 } catch (err) {
-                    alert('Invalid JSON file.');
+                    console.error("Import error:", err);
+                    alert('Invalid JSON backup file.');
                 }
             };
             reader.readAsText(file);
