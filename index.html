@@ -793,7 +793,11 @@
             title.innerText = `${mode === 'edit' ? 'Edit' : 'Add New'} ${type.toUpperCase()}`;
 
             let colMap = type;
+            if (type === 'computer') colMap = 'computers';
             if (type === 'facerecog') colMap = 'faceRecognition';
+            if (type === 'branch') colMap = 'branches';
+            if (type === 'hub') colMap = 'hubs';
+
             const data = (mode === 'edit' && recordId) ? (window.dbCollections[colMap]?.[recordId] || {}) : {};
             const currentStatus = data.status || data.actualStatus || 'Online';
 
