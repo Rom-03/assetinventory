@@ -207,9 +207,15 @@
             <!-- Sub-tab: Computer -->
             <div id="sub-tab-computer" class="device-sub-content space-y-4">
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex items-center space-x-3">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div class="flex items-center space-x-3 flex-wrap gap-2">
                             <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Computers Directory</h3>
+                            <!-- Toggle Switch Group -->
+                            <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
+                                <button onclick="setInventoryType('computer', 'all')" id="btn-comp-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
+                                <button onclick="setInventoryType('computer', 'branch')" id="btn-comp-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
+                                <button onclick="setInventoryType('computer', 'hub')" id="btn-comp-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
+                            </div>
                             <button onclick="exportTableToCSV('table-computer', 'computer_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -235,9 +241,14 @@
             <!-- Sub-tab: Face Recognition -->
             <div id="sub-tab-facerecog" class="device-sub-content hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex items-center space-x-3">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div class="flex items-center space-x-3 flex-wrap gap-2">
                             <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Face Recognition Terminals</h3>
+                            <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
+                                <button onclick="setInventoryType('facerecog', 'all')" id="btn-fr-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
+                                <button onclick="setInventoryType('facerecog', 'branch')" id="btn-fr-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
+                                <button onclick="setInventoryType('facerecog', 'hub')" id="btn-fr-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
+                            </div>
                             <button onclick="exportTableToCSV('table-facerecog', 'facerecognition_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
                         <input type="text" id="search-fr" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
@@ -256,6 +267,7 @@
                                     <th class="p-3.5">Username</th>
                                     <th class="p-3.5">Password</th>
                                     <th class="p-3.5">Status</th>
+                                    <th class="p-3.5">Remarks</th>
                                     <th class="p-3.5 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -268,9 +280,14 @@
             <!-- Sub-tab: Mikrotik -->
             <div id="sub-tab-mikrotik" class="device-sub-content hidden space-y-4">
                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex items-center space-x-3">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div class="flex items-center space-x-3 flex-wrap gap-2">
                             <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Mikrotik Router Network</h3>
+                            <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
+                                <button onclick="setInventoryType('mikrotik', 'all')" id="btn-mikrotik-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
+                                <button onclick="setInventoryType('mikrotik', 'branch')" id="btn-mikrotik-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
+                                <button onclick="setInventoryType('mikrotik', 'hub')" id="btn-mikrotik-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
+                            </div>
                             <button onclick="exportTableToCSV('table-mikrotik', 'mikrotik_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
                         <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
@@ -278,7 +295,7 @@
                     <div class="overflow-x-auto">
                         <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                             <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Firmware Version</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
+                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Firmware Version</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
@@ -339,9 +356,14 @@
                 </button>
             </div>
             <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="flex items-center space-x-3">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div class="flex items-center space-x-3 flex-wrap gap-2">
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Surveillance Network</h3>
+                        <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
+                            <button onclick="setInventoryType('cctv', 'all')" id="btn-cctv-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
+                            <button onclick="setInventoryType('cctv', 'branch')" id="btn-cctv-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
+                            <button onclick="setInventoryType('cctv', 'hub')" id="btn-cctv-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
+                        </div>
                         <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                     </div>
                     <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
@@ -349,7 +371,7 @@
                 <div class="overflow-x-auto">
                     <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                         <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                            <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5 text-right">Actions</th></tr>
+                            <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                     </table>
@@ -434,6 +456,15 @@
         let currentModalMode = 'add';
         let editingRecordId = null;
         let pendingAction = null;
+        
+        // Toggle filters state
+        const inventoryFilters = {
+            computer: 'all',
+            facerecog: 'all',
+            mikrotik: 'all',
+            cctv: 'all'
+        };
+
         window.dbCollections = {
             computers: {},
             faceRecognition: {},
@@ -524,6 +555,47 @@
             }
         }
 
+        function setInventoryType(tabKey, type) {
+            inventoryFilters[tabKey] = type;
+            
+            ['all', 'branch', 'hub'].forEach(t => {
+                let btnId = '';
+                if (tabKey === 'facerecog') btnId = `btn-fr-${t}`;
+                else if (tabKey === 'cctv') btnId = `btn-cctv-${t}`;
+                else if (tabKey === 'mikrotik') btnId = `btn-mikrotik-${t}`;
+                else btnId = `btn-comp-${t}`;
+
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm";
+                    } else {
+                        btn.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all";
+                    }
+                }
+            });
+
+            if (tabKey === 'computer') reloadComputersTable();
+            if (tabKey === 'facerecog') reloadFaceRecogTable();
+            if (tabKey === 'mikrotik') reloadMikrotikTable();
+            if (tabKey === 'cctv') reloadCctvTable();
+        }
+
+        function isItemHub(branchName, branchCode) {
+            const nameToCheck = branchName || '';
+            if (nameToCheck.toUpperCase().includes('HUB')) {
+                return true;
+            }
+            if (branchCode) {
+                for (const [id, hubData] of Object.entries(window.dbCollections.hubs)) {
+                    if (hubData.branchCode === branchCode || (hubData.branchName && hubData.branchName.toUpperCase().includes('HUB'))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         function getStatusBadge(status) {
             const isOffline = (status || '').toLowerCase() === 'offline';
             if (isOffline) {
@@ -532,16 +604,28 @@
             return `<span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full font-medium">Online</span>`;
         }
 
-        // Firebase Cloud Sync Operations
         async function loadAllDataFromFirebase() {
             try {
                 window.dbCollections = { computers: {}, faceRecognition: {}, mikrotik: {}, branches: {}, hubs: {}, cctv: {} };
-                await loadCollectionIntoTable('computers', 'table-computer', renderComputerRow);
-                await loadCollectionIntoTable('faceRecognition', 'table-facerecog', renderFaceRecogRow);
-                await loadCollectionIntoTable('mikrotik', 'table-mikrotik', renderMikrotikRow);
-                await loadCollectionIntoCards('branches', 'branch-cards-grid', renderBranchCard);
-                await loadCollectionIntoCards('hubs', 'hub-cards-grid', renderHubCard);
-                await loadCollectionIntoTable('cctv', 'table-cctv', renderCctvRow);
+                
+                const hubSnap = await window.getDocs(window.collection(window.firebaseDb, 'hubs'));
+                hubSnap.forEach(d => window.dbCollections.hubs[d.id] = d.data());
+
+                const branchSnap = await window.getDocs(window.collection(window.firebaseDb, 'branches'));
+                branchSnap.forEach(d => window.dbCollections.branches[d.id] = d.data());
+
+                await loadCollectionIntoMemory('computers');
+                await loadCollectionIntoMemory('faceRecognition');
+                await loadCollectionIntoMemory('mikrotik');
+                await loadCollectionIntoMemory('cctv');
+
+                reloadComputersTable();
+                reloadFaceRecogTable();
+                reloadMikrotikTable();
+                reloadCctvTable();
+
+                loadCardsIntoGrid('branches', 'branch-cards-grid', renderBranchCard);
+                loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
                 populateBranchFilters();
                 updateDashboardStats();
@@ -551,28 +635,77 @@
             }
         }
 
-        async function loadCollectionIntoTable(colName, tableId, renderFn) {
+        async function loadCollectionIntoMemory(colName) {
             const querySnapshot = await window.getDocs(window.collection(window.firebaseDb, colName));
-            const tbody = document.querySelector(`#${tableId} tbody`);
-            if(!tbody) return;
-            tbody.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                window.dbCollections[colName][docSnap.id] = data;
-                tbody.appendChild(renderFn(docSnap.id, data));
+                window.dbCollections[colName][docSnap.id] = docSnap.data();
             });
         }
 
-        async function loadCollectionIntoCards(colName, gridId, renderFn) {
-            const querySnapshot = await window.getDocs(window.collection(window.firebaseDb, colName));
+        async function loadCardsIntoGrid(colName, gridId, renderFn) {
             const grid = document.getElementById(gridId);
             if(!grid) return;
             grid.innerHTML = '';
-            querySnapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                window.dbCollections[colName][docSnap.id] = data;
-                grid.appendChild(renderFn(docSnap.id, data));
-            });
+            for (const [id, data] of Object.entries(window.dbCollections[colName])) {
+                grid.appendChild(renderFn(id, data));
+            }
+        }
+
+        function reloadComputersTable() {
+            const tbody = document.querySelector('#table-computer tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const filterType = inventoryFilters.computer;
+            
+            for (const [id, data] of Object.entries(window.dbCollections.computers)) {
+                const bName = data.branchName || data.locationDescription || '';
+                const isHub = isItemHub(bName, data.branchCode);
+                if (filterType === 'branch' && isHub) continue;
+                if (filterType === 'hub' && !isHub) continue;
+                tbody.appendChild(renderComputerRow(id, data));
+            }
+        }
+
+        function reloadFaceRecogTable() {
+            const tbody = document.querySelector('#table-facerecog tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const filterType = inventoryFilters.facerecog;
+            
+            for (const [id, data] of Object.entries(window.dbCollections.faceRecognition)) {
+                const isHub = isItemHub(data.branchName, data.branchCode);
+                if (filterType === 'branch' && isHub) continue;
+                if (filterType === 'hub' && !isHub) continue;
+                tbody.appendChild(renderFaceRecogRow(id, data));
+            }
+        }
+
+        function reloadMikrotikTable() {
+            const tbody = document.querySelector('#table-mikrotik tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const filterType = inventoryFilters.mikrotik;
+            
+            for (const [id, data] of Object.entries(window.dbCollections.mikrotik)) {
+                const isHub = isItemHub(data.branchName, data.branchCode);
+                if (filterType === 'branch' && isHub) continue;
+                if (filterType === 'hub' && !isHub) continue;
+                tbody.appendChild(renderMikrotikRow(id, data));
+            }
+        }
+
+        function reloadCctvTable() {
+            const tbody = document.querySelector('#table-cctv tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const filterType = inventoryFilters.cctv;
+            
+            for (const [id, data] of Object.entries(window.dbCollections.cctv)) {
+                const isHub = isItemHub(data.branchName, data.branchCode);
+                if (filterType === 'branch' && isHub) continue;
+                if (filterType === 'hub' && !isHub) continue;
+                tbody.appendChild(renderCctvRow(id, data));
+            }
         }
 
         function renderComputerRow(id, data) {
@@ -609,6 +742,37 @@
             return tr;
         }
 
+        function renderPasswordCell(passwordText) {
+            if (!passwordText) return '';
+            const uniqueId = 'pwd_' + Math.random().toString(36).substr(2, 9);
+            return `
+                <div class="flex items-center space-x-1.5">
+                    <span id="${uniqueId}" class="font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300" data-plain="${passwordText}" data-hidden="true">••••••••</span>
+                    <button onclick="togglePasswordVisibility('${uniqueId}', this)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1" title="Toggle Password Visibility">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button onclick="copyToClipboard('${passwordText}', this)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1" title="Copy Password">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                </div>`;
+        }
+
+        function togglePasswordVisibility(elementId, btnEl) {
+            const span = document.getElementById(elementId);
+            if (!span) return;
+            const isHidden = span.getAttribute('data-hidden') === 'true';
+            const plainText = span.getAttribute('data-plain');
+            if (isHidden) {
+                span.innerText = plainText;
+                span.setAttribute('data-hidden', 'false');
+                btnEl.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            } else {
+                span.innerText = '••••••••';
+                span.setAttribute('data-hidden', 'true');
+                btnEl.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+        }
+
         function renderFaceRecogRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
@@ -616,7 +780,6 @@
             
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
-            const passDisplay = data.password ? `<button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -627,8 +790,9 @@
                 <td class="p-3.5 font-mono text-xs">${data.serialNumber || ''}</td>
                 <td class="p-3.5 font-mono text-xs">${data.macAddress || ''}</td>
                 <td class="p-3.5">${userDisplay}</td>
-                <td class="p-3.5">${passDisplay}</td>
+                <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
@@ -644,7 +808,6 @@
             const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
             const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
-            const passDisplay = data.password ? `<button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -652,8 +815,9 @@
                 <td class="p-3.5">${ipDisplay}</td>
                 <td class="p-3.5">${firmwareDisplay}</td>
                 <td class="p-3.5">${userDisplay}</td>
-                <td class="p-3.5">${passDisplay}</td>
+                <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
@@ -668,7 +832,6 @@
 
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
-            const passDisplay = data.password ? `<button onclick="copyToClipboard('${data.password}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">••••••••</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -677,8 +840,9 @@
                 <td class="p-3.5">${data.cameraCount || ''}</td>
                 <td class="p-3.5 font-medium text-slate-700 dark:text-slate-300">${data.storage || ''}</td>
                 <td class="p-3.5">${userDisplay}</td>
-                <td class="p-3.5">${passDisplay}</td>
+                <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
@@ -718,6 +882,7 @@
         function renderHubCard(id, data) {
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
+            div.setAttribute('data-branch-code', data.branchCode || '');
             div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
             div.innerHTML = `
                 <div>
@@ -744,9 +909,13 @@
 
         function populateBranchFilters() {
             const branchOptions = ['<option value="">Filter Branch Code (All)</option>'];
-            document.querySelectorAll('#branch-cards-grid > div').forEach(card => {
+            const allCodes = new Set();
+            document.querySelectorAll('#branch-cards-grid > div, #hub-cards-grid > div').forEach(card => {
                 const code = card.getAttribute('data-branch-code');
-                if(code) branchOptions.push(`<option value="${code}">${code}</option>`);
+                if(code && !allCodes.has(code)) {
+                    allCodes.add(code);
+                    branchOptions.push(`<option value="${code}">${code}</option>`);
+                }
             });
             ['comp', 'fr', 'mikrotik', 'cctv'].forEach(id => {
                 const select = document.getElementById(`filter-branch-${id}`);
@@ -821,6 +990,7 @@
                         <div><label class="${labelClass}">Region</label><input type="text" id="m-region" value="${data.region || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Area</label><input type="text" id="m-area" value="${data.area || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch / Hub Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Location Description</label><input type="text" id="m-locationDescription" value="${data.locationDescription || data.location || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Asset Tag</label><input type="text" id="m-assetTag" value="${data.assetTag || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Serial</label><input type="text" id="m-serial" value="${data.serial || ''}" class="${fieldClass}"></div>
@@ -861,43 +1031,46 @@
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch / Hub Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Subnet Mask</label><input type="text" id="m-subnetMask" value="${data.subnetMask || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Default Gateway</label><input type="text" id="m-defaultGateway" value="${data.defaultGateway || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Serial Number</label><input type="text" id="m-serialNumber" value="${data.serialNumber || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">MAC Address</label><input type="text" id="m-macAddress" value="${data.macAddress || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
                         ${statusSelectHTML}
+                        <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'mikrotik') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch / Hub Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Firmware Version</label><input type="text" id="m-firmwareVersion" value="${data.firmwareVersion || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
                         ${statusSelectHTML}
+                        <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'cctv') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch / Hub Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">IP Address</label><input type="text" id="m-ipAddress" value="${data.ipAddress || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Camera Count</label><input type="text" id="m-cameraCount" value="${data.cameraCount || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Storage</label><input type="text" id="m-storage" value="${data.storage || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">Password</label><input type="password" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
                         ${statusSelectHTML}
+                        <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'branch' || type === 'hub') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch / Hub Name (Include 'HUB' if delivery hub)</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Location</label><input type="text" id="m-location" value="${data.location || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="${fieldClass}"></div>
@@ -947,18 +1120,18 @@
             let colName = 'computers';
             if (currentModalType === 'facerecog') colName = 'faceRecognition';
             if (currentModalType === 'mikrotik') colName = 'mikrotik';
-            if (currentModalType === 'branch') colName = 'branches';
-            if (currentModalType === 'hub') colName = 'hubs';
             if (currentModalType === 'cctv') colName = 'cctv';
+            if (currentModalType === 'branch' || currentModalType === 'hub') {
+                const bName = (payload.branchName || '').toUpperCase();
+                colName = bName.includes('HUB') ? 'hubs' : 'branches';
+            }
 
-            // Check duplicate IP validation
             if (payload.ipAddress && payload.ipAddress.trim() !== '') {
                 const targetIp = payload.ipAddress.trim();
                 const existingRecords = window.dbCollections[colName] || {};
                 
                 for (const [id, record] of Object.entries(existingRecords)) {
                     if (record.ipAddress && record.ipAddress.trim() === targetIp) {
-                        // Allow if editing the exact same record
                         if (currentModalMode === 'edit' && id === editingRecordId) {
                             continue;
                         }
@@ -1019,13 +1192,15 @@
             let csv = [];
             const rows = table.querySelectorAll('tr');
             rows.forEach(row => {
-                let cols = row.querySelectorAll('th, td');
-                let data = [];
-                for (let i = 0; i < cols.length - 1; i++) {
-                    let text = cols[i].innerText.replace(/"/g, '""');
-                    data.push('"' + text + '"');
+                if (row.style.display !== 'none') {
+                    let cols = row.querySelectorAll('th, td');
+                    let data = [];
+                    for (let i = 0; i < cols.length - 1; i++) {
+                        let text = cols[i].innerText.replace(/"/g, '""');
+                        data.push('"' + text + '"');
+                    }
+                    csv.push(data.join(','));
                 }
-                csv.push(data.join(','));
             });
             const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
             const downloadLink = document.createElement('a');
