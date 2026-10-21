@@ -218,11 +218,8 @@
                             </div>
                             <button onclick="exportTableToCSV('table-computer', 'computer_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            <select id="filter-branch-comp" onchange="filterTable('computer')" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
-                                <option value="">Filter Branch Code (All)</option>
-                            </select>
-                            <input type="text" id="search-comp" oninput="filterTableSearch('computer')" placeholder="Search records..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
+                        <div class="flex items-center">
+                            <input type="text" id="search-computer" oninput="filterTableSearch('computer')" placeholder="Search records..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
                         </div>
                     </div>
                     <div class="overflow-x-auto max-h-[600px]">
@@ -251,7 +248,9 @@
                             </div>
                             <button onclick="exportTableToCSV('table-facerecog', 'facerecognition_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <input type="text" id="search-fr" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
+                        <div class="flex items-center">
+                            <input type="text" id="search-facerecog" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table id="table-facerecog" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
@@ -290,7 +289,9 @@
                             </div>
                             <button onclick="exportTableToCSV('table-mikrotik', 'mikrotik_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
+                        <div class="flex items-center">
+                            <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
@@ -366,7 +367,9 @@
                         </div>
                         <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                     </div>
-                    <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-52">
+                    <div class="flex items-center">
+                        <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
@@ -627,7 +630,6 @@
                 loadCardsIntoGrid('branches', 'branch-cards-grid', renderBranchCard);
                 loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
-                populateBranchFilters();
                 updateDashboardStats();
                 updateBranchComputerCounts();
             } catch (e) {
@@ -664,6 +666,7 @@
                 if (filterType === 'hub' && !isHub) continue;
                 tbody.appendChild(renderComputerRow(id, data));
             }
+            filterTableSearch('computer');
         }
 
         function reloadFaceRecogTable() {
@@ -678,6 +681,7 @@
                 if (filterType === 'hub' && !isHub) continue;
                 tbody.appendChild(renderFaceRecogRow(id, data));
             }
+            filterTableSearch('facerecog');
         }
 
         function reloadMikrotikTable() {
@@ -692,6 +696,7 @@
                 if (filterType === 'hub' && !isHub) continue;
                 tbody.appendChild(renderMikrotikRow(id, data));
             }
+            filterTableSearch('mikrotik');
         }
 
         function reloadCctvTable() {
@@ -706,12 +711,12 @@
                 if (filterType === 'hub' && !isHub) continue;
                 tbody.appendChild(renderCctvRow(id, data));
             }
+            filterTableSearch('cctv');
         }
 
         function renderComputerRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
-            tr.setAttribute('data-branch', data.branchCode || '');
             tr.innerHTML = `
                 <td class="p-3.5 font-medium text-slate-800 dark:text-slate-100">${data.tseName || ''}</td>
                 <td class="p-3.5">${data.businessUnit || ''}</td>
@@ -776,7 +781,6 @@
         function renderFaceRecogRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
-            tr.setAttribute('data-branch', data.branchCode || '');
             
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
@@ -803,7 +807,6 @@
         function renderMikrotikRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
-            tr.setAttribute('data-branch', data.branchCode || '');
 
             const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
             const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
@@ -828,7 +831,6 @@
         function renderCctvRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
-            tr.setAttribute('data-branch', data.branchCode || '');
 
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
@@ -905,22 +907,6 @@
                     <button onclick="deleteCloudRecord('hubs', '${id}')" class="text-xs bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
                 </div>`;
             return div;
-        }
-
-        function populateBranchFilters() {
-            const branchOptions = ['<option value="">Filter Branch Code (All)</option>'];
-            const allCodes = new Set();
-            document.querySelectorAll('#branch-cards-grid > div, #hub-cards-grid > div').forEach(card => {
-                const code = card.getAttribute('data-branch-code');
-                if(code && !allCodes.has(code)) {
-                    allCodes.add(code);
-                    branchOptions.push(`<option value="${code}">${code}</option>`);
-                }
-            });
-            ['comp', 'fr', 'mikrotik', 'cctv'].forEach(id => {
-                const select = document.getElementById(`filter-branch-${id}`);
-                if(select) select.innerHTML = branchOptions.join('');
-            });
         }
 
         function updateDashboardStats() {
@@ -1222,18 +1208,12 @@
 
         function filterTableSearch(tableName) {
             const input = document.getElementById(`search-${tableName}`);
+            if (!input) return;
             const filter = input.value.toLowerCase();
-            document.querySelectorAll(`#table-${tableName} tbody tr`).forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
-            });
-        }
 
-        function filterTable(tableName) {
-            const selectEl = document.getElementById(`filter-branch-${tableName}`);
-            const selectedBranch = selectEl ? selectEl.value : '';
             document.querySelectorAll(`#table-${tableName} tbody tr`).forEach(row => {
-                const branchAttr = row.getAttribute('data-branch');
-                row.style.display = (!selectedBranch || branchAttr === selectedBranch) ? '' : 'none';
+                const matchesSearch = row.textContent.toLowerCase().includes(filter);
+                row.style.display = matchesSearch ? '' : 'none';
             });
         }
 
