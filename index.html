@@ -384,6 +384,9 @@
 
     </main>
 
+    <!-- Floating Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
     <!-- Redesigned Modern, Compact Modal -->
     <div id="assetModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-scale border border-slate-100 dark:border-slate-800">
@@ -520,6 +523,8 @@
             }
 
             if(tabId === 'dashboard') updateDashboardStats();
+            if(tabId === 'branch') loadCardsIntoGrid('branches', 'branch-cards-grid', renderBranchCard);
+            if(tabId === 'hub') loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
         }
 
         function switchDeviceSubTab(subId, saveState = true) {
@@ -631,7 +636,6 @@
                 loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
                 updateDashboardStats();
-                updateBranchComputerCounts();
             } catch (e) {
                 console.error("Error loading data from Firestore:", e);
             }
@@ -756,7 +760,7 @@
                     <button onclick="togglePasswordVisibility('${uniqueId}', this)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1" title="Toggle Password Visibility">
                         <i class="fa-solid fa-eye"></i>
                     </button>
-                    <button onclick="copyToClipboard('${passwordText}', this)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1" title="Copy Password">
+                    <button onclick="copyToClipboard('${passwordText}', 'Password copied to clipboard!')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1" title="Copy Password">
                         <i class="fa-solid fa-copy"></i>
                     </button>
                 </div>`;
@@ -783,7 +787,7 @@
             tr.setAttribute('data-id', id);
             
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
-            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
+            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -808,9 +812,9 @@
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
 
-            const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
+            const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', 'IP address copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
             const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
-            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
+            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -833,7 +837,7 @@
             tr.setAttribute('data-id', id);
 
             const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
-            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', this)" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
+            const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
             tr.innerHTML = `
                 <td class="p-3.5 font-mono font-bold text-red-600 dark:text-red-400">${data.branchCode || ''}</td>
@@ -853,9 +857,18 @@
         }
 
         function renderBranchCard(id, data) {
+            const cleanBranchCode = (data.branchCode || '').trim().toUpperCase();
+            
+            let activeComputersCount = 0;
+            for (const [compKey, compVal] of Object.entries(window.dbCollections.computers)) {
+                if ((compVal.branchCode || '').trim().toUpperCase() === cleanBranchCode) {
+                    activeComputersCount++;
+                }
+            }
+
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
-            div.setAttribute('data-branch-code', data.branchCode || '');
+            div.setAttribute('data-branch-code', cleanBranchCode);
             div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
             div.innerHTML = `
                 <div>
@@ -871,7 +884,7 @@
                         <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead || ''}</span></div>
                         <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo || ''}</span></div>
                         <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp || ''}</span></div>
-                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Computers Issued:</span><span class="branch-comp-count font-bold text-red-600 dark:text-red-400">0</span></div>
+                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Active Computers:</span><span class="branch-comp-count font-bold text-red-600 dark:text-red-400">${activeComputersCount}</span></div>
                     </div>
                 </div>
                 <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
@@ -882,9 +895,18 @@
         }
 
         function renderHubCard(id, data) {
+            const cleanBranchCode = (data.branchCode || '').trim().toUpperCase();
+            
+            let activeComputersCount = 0;
+            for (const [compKey, compVal] of Object.entries(window.dbCollections.computers)) {
+                if ((compVal.branchCode || '').trim().toUpperCase() === cleanBranchCode) {
+                    activeComputersCount++;
+                }
+            }
+
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
-            div.setAttribute('data-branch-code', data.branchCode || '');
+            div.setAttribute('data-branch-code', cleanBranchCode);
             div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
             div.innerHTML = `
                 <div>
@@ -900,6 +922,7 @@
                         <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead || ''}</span></div>
                         <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo || ''}</span></div>
                         <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded">${data.isp || ''}</span></div>
+                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Active Computers:</span><span class="branch-comp-count font-bold text-purple-600 dark:text-purple-400">${activeComputersCount}</span></div>
                     </div>
                 </div>
                 <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
@@ -915,24 +938,10 @@
             const hubStat = document.getElementById('stat-hubs');
             const cctvStat = document.getElementById('stat-cctv');
 
-            if(devStat) devStat.innerText = document.querySelectorAll('#table-computer tbody tr').length + document.querySelectorAll('#table-facerecog tbody tr').length + document.querySelectorAll('#table-mikrotik tbody tr').length;
-            if(branchStat) branchStat.innerText = document.querySelectorAll('#branch-cards-grid > div').length;
-            if(hubStat) hubStat.innerText = document.querySelectorAll('#hub-cards-grid > div').length;
-            if(cctvStat) cctvStat.innerText = document.querySelectorAll('#table-cctv tbody tr').length;
-        }
-
-        function updateBranchComputerCounts() {
-            const compRows = document.querySelectorAll('#table-computer tbody tr');
-            const branchCounts = {};
-            compRows.forEach(row => {
-                const branchCode = row.getAttribute('data-branch');
-                if (branchCode) branchCounts[branchCode] = (branchCounts[branchCode] || 0) + 1;
-            });
-            document.querySelectorAll('#branch-cards-grid > div').forEach(card => {
-                const branchCode = card.getAttribute('data-branch-code');
-                const countSpan = card.querySelector('.branch-comp-count');
-                if (countSpan && branchCode) countSpan.innerText = branchCounts[branchCode] || 0;
-            });
+            if(devStat) devStat.innerText = Object.keys(window.dbCollections.computers).length + Object.keys(window.dbCollections.faceRecognition).length + Object.keys(window.dbCollections.mikrotik).length;
+            if(branchStat) branchStat.innerText = Object.keys(window.dbCollections.branches).length;
+            if(hubStat) hubStat.innerText = Object.keys(window.dbCollections.hubs).length;
+            if(cctvStat) cctvStat.innerText = Object.keys(window.dbCollections.cctv).length;
         }
 
         function openModal(type, mode, recordId = null) {
@@ -1217,11 +1226,29 @@
             });
         }
 
-        function copyToClipboard(text, buttonElement) {
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900 dark:bg-slate-800 text-white text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700/80 pointer-events-auto transform translate-y-3 opacity-0 transition-all duration-300 flex items-center space-x-2";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i><span class="font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-3', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-3', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        function copyToClipboard(text, successMessage = 'Copied to clipboard!') {
             navigator.clipboard.writeText(text).then(() => {
-                const orig = buttonElement.innerHTML;
-                buttonElement.innerHTML = '<span class="text-emerald-600 font-bold">Copied!</span>';
-                setTimeout(() => buttonElement.innerHTML = orig, 1500);
+                showToast(successMessage);
             });
         }
 
