@@ -437,21 +437,78 @@
 
         <!-- ================= BRANCH TAB ================= -->
         <div id="tab-branch" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Branch Management</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Overview of active branch locations, team heads, and direct ISP connections.</p>
-                </div>
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                    <div class="relative flex-1 sm:flex-initial">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
-                        <input type="text" id="search-branch" oninput="filterCards('branch')" placeholder="Search branches..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60 shadow-sm font-medium">
+            
+            <!-- Summary Cards for Branches -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Branches</p>
+                        <h3 id="branch-stat-total" class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-0.5">0</h3>
                     </div>
-                    <button onclick="openModal('branch', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 whitespace-nowrap flex items-center justify-center space-x-1.5">
-                        <i class="fa-solid fa-plus"></i><span>Add Branch</span>
+                    <div class="w-11 h-11 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-base shadow-inner"><i class="fa-solid fa-store"></i></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Online Branches</p>
+                        <h3 id="branch-stat-online" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">0</h3>
+                    </div>
+                    <div class="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-base shadow-inner"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Offline Branches</p>
+                        <h3 id="branch-stat-offline" class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">0</h3>
+                    </div>
+                    <div class="w-11 h-11 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center text-base shadow-inner"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Branches with Pending Issues</p>
+                        <h3 id="branch-stat-issues" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">0</h3>
+                    </div>
+                    <div class="w-11 h-11 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-base shadow-inner"><i class="fa-solid fa-clipboard-question"></i></div>
+                </div>
+            </div>
+
+            <!-- Branch Controls Toolbar (Search, Filters, Sort, Add) -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Branch Management</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Overview of active branch locations, team heads, and direct ISP connections.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"><i class="fa-solid fa-search text-xs"></i></span>
+                        <input type="text" id="search-branch" oninput="renderBranchCardsGrid()" placeholder="Search code, name..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-44 sm:w-52 shadow-sm font-medium">
+                    </div>
+                    <!-- ISP Filter -->
+                    <select id="filter-branch-isp" onchange="renderBranchCardsGrid()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm font-medium">
+                        <option value="">All ISPs</option>
+                        <option value="PLDT">PLDT</option>
+                        <option value="Globe">Globe</option>
+                        <option value="Converge">Converge</option>
+                    </select>
+                    <!-- Status Filter -->
+                    <select id="filter-branch-status" onchange="renderBranchCardsGrid()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm font-medium">
+                        <option value="">All Statuses</option>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                    <!-- Sorting -->
+                    <select id="sort-branch-by" onchange="renderBranchCardsGrid()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm font-medium">
+                        <option value="name-asc">Sort: Name (A-Z)</option>
+                        <option value="code-asc">Sort: Code (A-Z)</option>
+                        <option value="devices-desc">Sort: Most Devices</option>
+                    </select>
+                    <!-- Add Branch Button -->
+                    <button onclick="openModal('branch', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 whitespace-nowrap flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus text-[11px]"></i><span>Add Branch</span>
                     </button>
                 </div>
             </div>
+
+            <!-- Cards Grid -->
             <div id="branch-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
@@ -528,6 +585,61 @@
             <div class="flex justify-end space-x-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors">Cancel</button>
                 <button onclick="saveRecord()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20">Save Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Branch Details View Modal -->
+    <div id="branchDetailsModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-all">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-scale border border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 bg-red-50 dark:bg-red-950/50 text-red-600 rounded-xl flex items-center justify-center text-base"><i class="fa-solid fa-store"></i></div>
+                    <div>
+                        <h3 id="det-branch-name" class="font-bold text-slate-800 dark:text-slate-100 text-sm">Branch Name</h3>
+                        <p id="det-branch-code" class="font-mono text-xs text-red-600 dark:text-red-400 font-bold">CODE</p>
+                    </div>
+                </div>
+                <button onclick="closeBranchDetailsModal()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors text-xs"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 text-xs">
+                <!-- Network Info Box -->
+                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wider"><i class="fa-solid fa-network-wired text-red-600 mr-1.5"></i> Network Information</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+                        <div><span class="text-slate-400 block text-[10px]">ISP Connection</span><span id="det-isp" class="font-semibold text-slate-800 dark:text-slate-100">PLDT</span></div>
+                        <div><span class="text-slate-400 block text-[10px]">Connection Type</span><span id="det-conn-type" class="font-mono text-slate-800 dark:text-slate-100">Fiber Dedicated</span></div>
+                        <div><span class="text-slate-400 block text-[10px]">Router IP</span><span id="det-router-ip" class="font-mono text-slate-800 dark:text-slate-100">192.168.1.1</span></div>
+                        <div><span class="text-slate-400 block text-[10px]">Gateway</span><span id="det-gateway" class="font-mono text-slate-800 dark:text-slate-100">192.168.1.254</span></div>
+                        <div><span class="text-slate-400 block text-[10px]">LAN Subnet</span><span id="det-subnet" class="font-mono text-slate-800 dark:text-slate-100">255.255.255.0</span></div>
+                        <div><span class="text-slate-400 block text-[10px]">Branch Status</span><span id="det-status" class="font-semibold text-emerald-600">Online</span></div>
+                    </div>
+                </div>
+
+                <!-- Assigned Devices List -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wider"><i class="fa-solid fa-laptop text-red-600 mr-1.5"></i> Assigned Devices</h4>
+                    <div id="det-assigned-devices-list" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl divide-y divide-slate-100 dark:divide-slate-800 max-h-40 overflow-y-auto">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Maintenance History & Support Issues -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-1.5">
+                        <h4 class="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wider"><i class="fa-solid fa-screwdriver-wrench text-amber-500 mr-1"></i> Maintenance History</h4>
+                        <p id="det-maintenance" class="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">No recent corrective maintenance logged for this branch.</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-1.5">
+                        <h4 class="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wider"><i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1"></i> Support Issues & Remarks</h4>
+                        <p id="det-remarks" class="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">All systems functioning within normal operating parameters.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button onclick="closeBranchDetailsModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all">Close</button>
             </div>
         </div>
     </div>
@@ -653,7 +765,7 @@
             }
 
             if(tabId === 'dashboard') updateDashboardStats();
-            if(tabId === 'branch') loadCardsIntoGrid('branches', 'branch-cards-grid', renderBranchCard);
+            if(tabId === 'branch') renderBranchCardsGrid();
             if(tabId === 'hub') loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
         }
 
@@ -762,7 +874,7 @@
                 reloadMikrotikTable();
                 reloadCctvTable();
 
-                loadCardsIntoGrid('branches', 'branch-cards-grid', renderBranchCard);
+                renderBranchCardsGrid();
                 loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
                 updateDashboardStats();
@@ -877,7 +989,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                `;
+                </td>`;
             return tr;
         }
 
@@ -934,7 +1046,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                `;
+                </td>`;
             return tr;
         }
 
@@ -958,7 +1070,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                `;
+                </td>`;
             return tr;
         }
 
@@ -982,24 +1094,317 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                `;
+                </td>`;
             return tr;
+        }
+
+        // ================= DASHBOARD METRICS CALCULATOR =================
+        function updateDashboardStats() {
+            const devStat = document.getElementById('stat-devices');
+            const branchStat = document.getElementById('stat-branches');
+            const hubStat = document.getElementById('stat-hubs');
+            const cctvStat = document.getElementById('stat-cctv');
+
+            const totalComps = Object.keys(window.dbCollections.computers).length;
+            const totalFr = Object.keys(window.dbCollections.faceRecognition).length;
+            const totalMik = Object.keys(window.dbCollections.mikrotik).length;
+            const totalCctv = Object.keys(window.dbCollections.cctv).length;
+            const totalBranches = Object.keys(window.dbCollections.branches).length;
+            const totalHubs = Object.keys(window.dbCollections.hubs).length;
+
+            if(devStat) devStat.innerText = totalComps + totalFr + totalMik;
+            if(branchStat) branchStat.innerText = totalBranches;
+            if(hubStat) hubStat.innerText = totalHubs;
+            if(cctvStat) cctvStat.innerText = totalCctv;
+
+            // 1. Asset Health Overview
+            let operational = 0;
+            let offline = 0;
+            let defective = 0;
+            let underRepair = 0;
+            let forDeployment = 0;
+
+            const evaluateStatus = (st) => {
+                const s = (st || '').trim().toLowerCase();
+                if (s === 'online' || s === 'active' || s === 'operational' || s === 'running') operational++;
+                else if (s === 'offline' || s === 'disconnected') offline++;
+                else if (s === 'defective' || s === 'broken') defective++;
+                else if (s === 'repair' || s === 'under repair' || s === 'maintenance') underRepair++;
+                else if (s === 'deployment' || s === 'for deployment' || s === 'new' || s === 'spare') forDeployment++;
+                else operational++;
+            };
+
+            for (const item of Object.values(window.dbCollections.computers)) evaluateStatus(item.status || item.actualStatus);
+            for (const item of Object.values(window.dbCollections.faceRecognition)) evaluateStatus(item.status);
+            for (const item of Object.values(window.dbCollections.mikrotik)) evaluateStatus(item.status);
+            for (const item of Object.values(window.dbCollections.cctv)) evaluateStatus(item.status);
+
+            const opEl = document.getElementById('health-operational');
+            const offEl = document.getElementById('health-offline');
+            const defEl = document.getElementById('health-defective');
+            const repEl = document.getElementById('health-repair');
+            const depEl = document.getElementById('health-deployment');
+
+            if (opEl) opEl.innerText = operational;
+            if (offEl) offEl.innerText = offline;
+            if (defEl) defEl.innerText = defective;
+            if (repEl) repEl.innerText = underRepair;
+            if (depEl) depEl.innerText = forDeployment;
+
+            // 2. Pending Actions Table
+            const pendingTbody = document.querySelector('#table-pending-actions tbody');
+            if (pendingTbody) {
+                pendingTbody.innerHTML = '';
+                let pendingRowsCount = 0;
+
+                const addPendingRow = (branchCode, issueText, statusText, updateTime, actionHtml) => {
+                    pendingRowsCount++;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3 font-mono font-bold text-red-600 dark:text-red-400">${branchCode || 'N/A'}</td>
+                        <td class="p-3 font-medium text-slate-800 dark:text-slate-100">${issueText}</td>
+                        <td class="p-3"><span class="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] px-2 py-0.5 rounded-full font-bold">${statusText}</span></td>
+                        <td class="p-3 font-mono text-slate-400 text-[11px]">${updateTime || 'Recent'}</td>
+                        <td class="p-3 text-right">${actionHtml}</td>
+                    `;
+                    pendingTbody.appendChild(tr);
+                };
+
+                for (const [id, comp] of Object.entries(window.dbCollections.computers)) {
+                    const st = (comp.status || comp.actualStatus || '').toLowerCase();
+                    if (st === 'offline') {
+                        addPendingRow(comp.branchCode, 'Computer Unit Offline / Disconnected', 'Offline', comp.osTicket || 'Active Check', `<button onclick="switchTab('devices')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-2.5 py-1 rounded-lg transition">Inspect</button>`);
+                    }
+                    if (comp.ptuStatus && comp.ptuStatus.toLowerCase().includes('pending')) {
+                        addPendingRow(comp.branchCode, 'Branch Awaiting BIR / PTU Patch', 'Pending BIR', comp.osTicket || 'Unpatched', `<button onclick="switchTab('devices')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-semibold px-2.5 py-1 rounded-lg transition">Review PTU</button>`);
+                    }
+                }
+
+                for (const [id, cctv] of Object.entries(window.dbCollections.cctv)) {
+                    const remarks = (cctv.remarks || '').toLowerCase();
+                    const st = (cctv.status || '').toLowerCase();
+                    if (remarks.includes('hdd') || remarks.includes('dvr') || remarks.includes('replace')) {
+                        addPendingRow(cctv.branchCode, `CCTV DVR/HDD Replacement Required (${cctv.remarks})`, 'Needs Parts', 'Storage Alert', `<button onclick="switchTab('cctv')" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold px-2.5 py-1 rounded-lg transition">Check CCTV</button>`);
+                    } else if (st === 'offline') {
+                        addPendingRow(cctv.branchCode, 'CCTV Surveillance Unit Offline', 'Offline', 'Stream Lost', `<button onclick="switchTab('cctv')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">Diagnose</button>`);
+                    }
+                }
+
+                for (const [id, fr] of Object.entries(window.dbCollections.faceRecognition)) {
+                    if ((fr.status || '').toLowerCase() === 'offline') {
+                        addPendingRow(fr.branchCode, 'Face Recognition Biometric Offline', 'Offline', 'Network Drop', `<button onclick="switchTab('devices'); switchDeviceSubTab('facerecog');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Biometric</button>`);
+                    }
+                }
+
+                for (const [id, mik] of Object.entries(window.dbCollections.mikrotik)) {
+                    if ((mik.status || '').toLowerCase() === 'offline') {
+                        addPendingRow(mik.branchCode, 'Mikrotik Router Unreachable', 'Offline', 'Gateway Down', `<button onclick="switchTab('devices'); switchDeviceSubTab('mikrotik');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Router</button>`);
+                    }
+                }
+
+                if (pendingRowsCount === 0) {
+                    pendingTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400"><i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>All systems operational! No pending issues require your attention right now.</td></tr>`;
+                }
+                const badge = document.getElementById('pending-count-badge');
+                if (badge) badge.innerText = `${pendingRowsCount} items`;
+            }
+
+            // 3. Asset Distribution
+            let desktops = 0;
+            let laptops = 0;
+            let servers = 0;
+            let networkDevs = totalMik;
+            let cctvUnits = totalCctv;
+            let biometricUnits = totalFr;
+
+            for (const comp of Object.values(window.dbCollections.computers)) {
+                const cat = (comp.category || comp.machineType || comp.deviceFamily || '').toLowerCase();
+                if (cat.includes('laptop') || cat.includes('notebook')) laptops++;
+                else if (cat.includes('server')) servers++;
+                else desktops++;
+            }
+
+            const totalHardware = desktops + laptops + servers + networkDevs + cctvUnits + biometricUnits;
+            const distTotalCountEl = document.getElementById('dist-total-count');
+            if (distTotalCountEl) distTotalCountEl.innerText = `${totalHardware} units`;
+
+            const calcPct = (cnt) => totalHardware > 0 ? Math.round((cnt / totalHardware) * 100) : 0;
+
+            const distContainer = document.getElementById('asset-distribution-bars');
+            if (distContainer) {
+                distContainer.innerHTML = `
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Desktops</span><span class="font-mono text-slate-500">${desktops} (${calcPct(desktops)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-red-600 h-full rounded-full" style="width: ${calcPct(desktops)}%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Laptops</span><span class="font-mono text-slate-500">${laptops} (${calcPct(laptops)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: ${calcPct(laptops)}%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Servers</span><span class="font-mono text-slate-500">${servers} (${calcPct(servers)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-purple-600 h-full rounded-full" style="width: ${calcPct(servers)}%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Network Routers (Mikrotik)</span><span class="font-mono text-slate-500">${networkDevs} (${calcPct(networkDevs)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-full rounded-full" style="width: ${calcPct(networkDevs)}%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">CCTV Surveillance</span><span class="font-mono text-slate-500">${cctvUnits} (${calcPct(cctvUnits)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-amber-500 h-full rounded-full" style="width: ${calcPct(cctvUnits)}%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Face Recognition / Biometrics</span><span class="font-mono text-slate-500">${biometricUnits} (${calcPct(biometricUnits)}%)</span></div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: ${calcPct(biometricUnits)}%"></div></div>
+                    </div>
+                `;
+            }
+
+            // 4. Recent Activity
+            const activityList = document.getElementById('recent-activity-list');
+            if (activityList) {
+                activityList.innerHTML = '';
+                const activities = [];
+                for (const comp of Object.values(window.dbCollections.computers)) {
+                    activities.push({ text: `Computer asset registered/updated for branch code <b>${comp.branchCode || 'HQ'}</b> (${comp.model || 'Standard PC'})`, time: comp.osTicket ? `Ticket #${comp.osTicket}` : 'Cloud Synced', icon: 'fa-laptop', color: 'text-red-600 bg-red-50 dark:bg-red-950/50' });
+                }
+                for (const branch of Object.values(window.dbCollections.branches)) {
+                    activities.push({ text: `Branch location <b>${branch.branchName || branch.branchCode}</b> status updated (${branch.isp || 'Online'})`, time: branch.contactNo || 'Active Branch', icon: 'fa-store', color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50' });
+                }
+                for (const cctv of Object.values(window.dbCollections.cctv)) {
+                    activities.push({ text: `CCTV surveillance unit registered for <b>${cctv.branchCode || 'Branch'}</b> (${cctv.cameraCount || 'Multiple'} cameras)`, time: cctv.storage || 'Storage Active', icon: 'fa-video', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50' });
+                }
+
+                if (activities.length === 0) {
+                    activityList.innerHTML = `<div class="py-4 text-center text-xs text-slate-400">No recent activity records found in current database.</div>`;
+                } else {
+                    activities.slice(0, 5).forEach(act => {
+                        const item = document.createElement('div');
+                        item.className = "py-2.5 flex items-center justify-between text-xs";
+                        item.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${act.color}"><i class="fa-solid ${act.icon} text-xs"></i></div>
+                                <span class="text-slate-700 dark:text-slate-300">${act.text}</span>
+                            </div>
+                            <span class="font-mono text-[11px] text-slate-400 shrink-0 ml-3">${act.time}</span>
+                        `;
+                        activityList.appendChild(item);
+                    });
+                }
+            }
+        }
+
+        // ================= IMPROVED BRANCH TAB FUNCTIONS =================
+
+        function renderBranchCardsGrid() {
+            const grid = document.getElementById('branch-cards-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const searchQuery = (document.getElementById('search-branch')?.value || '').toLowerCase();
+            const ispFilter = document.getElementById('filter-branch-isp')?.value || '';
+            const statusFilter = document.getElementById('filter-branch-status')?.value || '';
+            const sortBy = document.getElementById('sort-branch-by')?.value || 'name-asc';
+
+            let branchEntries = Object.entries(window.dbCollections.branches);
+
+            let totalB = branchEntries.length;
+            let onlineB = 0;
+            let offlineB = 0;
+            let pendingIssuesB = 0;
+
+            branchEntries.forEach(([id, data]) => {
+                const st = (data.status || '').toLowerCase();
+                if (st === 'offline') offlineB++;
+                else onlineB++;
+
+                const cleanCode = (data.branchCode || '').trim().toUpperCase();
+                let hasIssue = (data.remarks && data.remarks.trim() !== '') || st === 'offline';
+                for (const comp of Object.values(window.dbCollections.computers)) {
+                    if ((comp.branchCode || '').trim().toUpperCase() === cleanCode) {
+                        if ((comp.status || comp.actualStatus || '').toLowerCase() === 'offline' || (comp.ptuStatus || '').toLowerCase().includes('pending')) {
+                            hasIssue = true;
+                        }
+                    }
+                }
+                if (hasIssue) pendingIssuesB++;
+            });
+
+            const statTotal = document.getElementById('branch-stat-total');
+            const statOnline = document.getElementById('branch-stat-online');
+            const statOffline = document.getElementById('branch-stat-offline');
+            const statIssues = document.getElementById('branch-stat-issues');
+
+            if (statTotal) statTotal.innerText = totalB;
+            if (statOnline) statOnline.innerText = onlineB;
+            if (statOffline) statOffline.innerText = offlineB;
+            if (statIssues) statIssues.innerText = pendingIssuesB;
+
+            branchEntries = branchEntries.filter(([id, data]) => {
+                const name = (data.branchName || '').toLowerCase();
+                const code = (data.branchCode || '').toLowerCase();
+                const loc = (data.location || '').toLowerCase();
+                const isp = data.isp || '';
+                const st = data.status || 'Online';
+
+                const matchesSearch = name.includes(searchQuery) || code.includes(searchQuery) || loc.includes(searchQuery);
+                const matchesIsp = ispFilter === '' || isp === ispFilter;
+                const matchesStatus = statusFilter === '' || st === statusFilter;
+
+                return matchesSearch && matchesIsp && matchesStatus;
+            });
+
+            branchEntries.sort(([idA, dataA], [idB, dataB]) => {
+                const countComputers = (bCode) => {
+                    let c = 0;
+                    const clean = (bCode || '').trim().toUpperCase();
+                    for (const comp of Object.values(window.dbCollections.computers)) {
+                        if ((comp.branchCode || '').trim().toUpperCase() === clean) c++;
+                    }
+                    return c;
+                };
+
+                if (sortBy === 'name-asc') {
+                    return (dataA.branchName || '').localeCompare(dataB.branchName || '');
+                } else if (sortBy === 'code-asc') {
+                    return (dataA.branchCode || '').localeCompare(dataB.branchCode || '');
+                } else if (sortBy === 'devices-desc') {
+                    return countComputers(dataB.branchCode) - countComputers(dataA.branchCode);
+                }
+                return 0;
+            });
+
+            if (branchEntries.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs">No branch locations match your search or filter criteria.</div>`;
+                return;
+            }
+
+            branchEntries.forEach(([id, data]) => {
+                grid.appendChild(renderBranchCard(id, data));
+            });
         }
 
         function renderBranchCard(id, data) {
             const cleanBranchCode = (data.branchCode || '').trim().toUpperCase();
             
-            let activeComputersCount = 0;
+            let operationalComputers = 0;
+            let offlineComputers = 0;
+            let totalComputers = 0;
+
             for (const [compKey, compVal] of Object.entries(window.dbCollections.computers)) {
                 if ((compVal.branchCode || '').trim().toUpperCase() === cleanBranchCode) {
-                    activeComputersCount++;
+                    totalComputers++;
+                    const st = (compVal.status || compVal.actualStatus || '').toLowerCase();
+                    if (st === 'offline') offlineComputers++;
+                    else operationalComputers++;
                 }
             }
 
             const div = document.createElement('div');
             div.setAttribute('data-id', id);
             div.setAttribute('data-branch-code', cleanBranchCode);
-            div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between";
+            div.className = "bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-red-500/40 transition-all";
             div.innerHTML = `
                 <div>
                     <div class="flex items-center justify-between mb-2">
@@ -1013,15 +1418,107 @@
                     <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 pt-3">
                         <div class="flex justify-between items-center"><span>Team Head:</span><span class="font-semibold text-slate-800 dark:text-slate-100">${data.teamHead || ''}</span></div>
                         <div class="flex justify-between items-center"><span>Contact No.:</span><span class="font-mono text-slate-700 dark:text-slate-300">${data.contactNo || ''}</span></div>
-                        <div class="flex justify-between items-center"><span>ISP:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp || ''}</span></div>
-                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300"><span>Active Computers:</span><span class="branch-comp-count font-bold text-red-600 dark:text-red-400">${activeComputersCount}</span></div>
+                        <div class="flex justify-between items-center"><span>ISP Connection:</span><span class="font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded">${data.isp || 'PLDT'}</span></div>
+                        <div class="flex justify-between items-center border-t border-dashed border-slate-100 dark:border-slate-800 pt-2 font-medium text-slate-700 dark:text-slate-300">
+                            <span>Active Computers:</span>
+                            <button onclick="filterDevicesByBranch('${cleanBranchCode}')" class="font-bold text-red-600 dark:text-red-400 hover:underline flex items-center space-x-1" title="Click to view assigned devices">
+                                <span>${totalComputers}</span>
+                                <span class="text-[10px] text-slate-400 font-normal">(${operationalComputers} operational${offlineComputers >0 ? `, ${offlineComputers} offline`:''})</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
-                    <button onclick="openModal('branch', 'edit', '${id}')" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-pen"></i><span>Edit</span></button>
-                    <button onclick="deleteCloudRecord('branches', '${id}')" class="text-xs bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-trash"></i><span>Delete</span></button>
+                <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <button onclick="openBranchDetails('${id}')" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-eye text-red-600"></i><span>View Details</span></button>
+                    <div class="flex space-x-2">
+                        <button onclick="openModal('branch', 'edit', '${id}')" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1.5 rounded-lg font-medium transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="confirmDeleteBranch('${id}', '${data.branchName || 'Branch'}')" class="text-xs bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1.5 rounded-lg font-medium transition" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>`;
             return div;
+        }
+
+        function filterDevicesByBranch(branchCode) {
+            switchTab('devices');
+            switchDeviceSubTab('computer');
+            const searchInput = document.getElementById('search-computer');
+            if (searchInput) {
+                searchInput.value = branchCode;
+                filterTableSearch('computer');
+            }
+            showToast(`Showing computers for branch code: ${branchCode}`);
+        }
+
+        function openBranchDetails(id) {
+            const branch = window.dbCollections.branches[id];
+            if (!branch) return;
+
+            document.getElementById('det-branch-name').innerText = branch.branchName || 'Branch Location';
+            document.getElementById('det-branch-code').innerText = branch.branchCode || 'CODE';
+            document.getElementById('det-isp').innerText = branch.isp || 'PLDT';
+            document.getElementById('det-conn-type').innerText = branch.connectionType || 'Fiber Dedicated';
+            document.getElementById('det-router-ip').innerText = branch.routerIp || '192.168.1.1';
+            document.getElementById('det-gateway').innerText = branch.gateway || '192.168.1.254';
+            document.getElementById('det-subnet').innerText = branch.subnet || '255.255.255.0';
+            
+            const statusEl = document.getElementById('det-status');
+            const st = branch.status || 'Online';
+            statusEl.innerText = st;
+            statusEl.className = st.toLowerCase() === 'offline' ? 'font-semibold text-rose-600' : 'font-semibold text-emerald-600';
+
+            document.getElementById('det-maintenance').innerText = branch.maintenanceHistory || 'Routine hardware and network maintenance completed. No critical incidents.';
+            document.getElementById('det-remarks').innerText = branch.remarks || 'All systems functioning within normal operating parameters.';
+
+            const deviceListContainer = document.getElementById('det-assigned-devices-list');
+            deviceListContainer.innerHTML = '';
+            
+            let assignedCount = 0;
+            const cleanCode = (branch.branchCode || '').trim().toUpperCase();
+
+            for (const [compId, comp] of Object.entries(window.dbCollections.computers)) {
+                if ((comp.branchCode || '').trim().toUpperCase() === cleanCode) {
+                    assignedCount++;
+                    const item = document.createElement('div');
+                    item.className = "p-2.5 flex items-center justify-between text-xs";
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-laptop text-red-600"></i>
+                            <span class="font-medium text-slate-800 dark:text-slate-100">${comp.model || 'Standard Workstation'} (${comp.assetTag || comp.serial || 'No Tag'})</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono text-[11px] text-slate-400">${comp.processor || ''}</span>
+                            ${getStatusBadge(comp.status || comp.actualStatus)}
+                        </div>
+                    `;
+                    deviceListContainer.appendChild(item);
+                }
+            }
+
+            if (assignedCount === 0) {
+                deviceListContainer.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">No computers currently assigned to this branch code.</div>`;
+            }
+
+            const modal = document.getElementById('branchDetailsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBranchDetailsModal() {
+            document.getElementById('branchDetailsModal').classList.add('hidden');
+            document.getElementById('branchDetailsModal').classList.remove('flex');
+        }
+
+        function confirmDeleteBranch(id, branchName) {
+            showWarningModal('Delete Branch Location', `Are you sure you want to delete branch "${branchName}"? This action cannot be undone.`, async () => {
+                try {
+                    await window.deleteDoc(window.doc(window.firebaseDb, 'branches', id));
+                    loadAllDataFromFirebase();
+                    showToast(`Successfully deleted branch: ${branchName}`);
+                } catch (e) {
+                    console.error("Error deleting branch:", e);
+                    alert("Failed to delete branch record.");
+                }
+            });
         }
 
         function renderHubCard(id, data) {
@@ -1062,193 +1559,6 @@
             return div;
         }
 
-        function updateDashboardStats() {
-            const devStat = document.getElementById('stat-devices');
-            const branchStat = document.getElementById('stat-branches');
-            const hubStat = document.getElementById('stat-hubs');
-            const cctvStat = document.getElementById('stat-cctv');
-
-            const totalComps = Object.keys(window.dbCollections.computers).length;
-            const totalFr = Object.keys(window.dbCollections.faceRecognition).length;
-            const totalMik = Object.keys(window.dbCollections.mikrotik).length;
-            const totalCctv = Object.keys(window.dbCollections.cctv).length;
-            const totalBranches = Object.keys(window.dbCollections.branches).length;
-            const totalHubs = Object.keys(window.dbCollections.hubs).length;
-
-            if(devStat) devStat.innerText = totalComps + totalFr + totalMik;
-            if(branchStat) branchStat.innerText = totalBranches;
-            if(hubStat) hubStat.innerText = totalHubs;
-            if(cctvStat) cctvStat.innerText = totalCctv;
-
-            // 1. Calculate Asset Health Overview from actual inventory data
-            let operational = 0;
-            let offline = 0;
-            let defective = 0;
-            let underRepair = 0;
-            let forDeployment = 0;
-
-            const evaluateStatus = (st) => {
-                const s = (st || '').trim().toLowerCase();
-                if (s === 'online' || s === 'active' || s === 'operational' || s === 'running') operational++;
-                else if (s === 'offline' || s === 'disconnected') offline++;
-                else if (s === 'defective' || s === 'broken') defective++;
-                else if (s === 'repair' || s === 'under repair' || s === 'maintenance') underRepair++;
-                else if (s === 'deployment' || s === 'for deployment' || s === 'new' || s === 'spare') forDeployment++;
-                else operational++; // Default fallback for healthy records
-            };
-
-            for (const item of Object.values(window.dbCollections.computers)) evaluateStatus(item.status || item.actualStatus);
-            for (const item of Object.values(window.dbCollections.faceRecognition)) evaluateStatus(item.status);
-            for (const item of Object.values(window.dbCollections.mikrotik)) evaluateStatus(item.status);
-            for (const item of Object.values(window.dbCollections.cctv)) evaluateStatus(item.status);
-
-            document.getElementById('health-operational').innerText = operational;
-            document.getElementById('health-offline').innerText = offline;
-            document.getElementById('health-defective').innerText = defective;
-            document.getElementById('health-repair').innerText = underRepair;
-            document.getElementById('health-deployment').innerText = forDeployment;
-
-            // 2. Populate Pending Actions Table
-            const pendingTbody = document.querySelector('#table-pending-actions tbody');
-            pendingTbody.innerHTML = '';
-            let pendingRowsCount = 0;
-
-            const addPendingRow = (branchCode, issueText, statusText, updateTime, actionHtml) => {
-                pendingRowsCount++;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-3 font-mono font-bold text-red-600 dark:text-red-400">${branchCode || 'N/A'}</td>
-                    <td class="p-3 font-medium text-slate-800 dark:text-slate-100">${issueText}</td>
-                    <td class="p-3"><span class="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] px-2 py-0.5 rounded-full font-bold">${statusText}</span></td>
-                    <td class="p-3 font-mono text-slate-400 text-[11px]">${updateTime || 'Recent'}</td>
-                    <td class="p-3 text-right">${actionHtml}</td>
-                `;
-                pendingTbody.appendChild(tr);
-            };
-
-            // Scan Computers for issues (Offline status, un-enrolled ITAMS/SOTI, or PTU pending)
-            for (const [id, comp] of Object.entries(window.dbCollections.computers)) {
-                const st = (comp.status || comp.actualStatus || '').toLowerCase();
-                if (st === 'offline') {
-                    addPendingRow(comp.branchCode, 'Computer Unit Offline / Disconnected', 'Offline', comp.osTicket || 'Active Check', `<button onclick="switchTab('devices')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-2.5 py-1 rounded-lg transition">Inspect</button>`);
-                }
-                if (comp.ptuStatus && comp.ptuStatus.toLowerCase().includes('pending')) {
-                    addPendingRow(comp.branchCode, 'Branch Awaiting BIR / PTU Patch', 'Pending BIR', comp.osTicket || 'Unpatched', `<button onclick="switchTab('devices')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-semibold px-2.5 py-1 rounded-lg transition">Review PTU</button>`);
-                }
-            }
-
-            // Scan CCTV for DVR / HDD replacements or offline status
-            for (const [id, cctv] of Object.entries(window.dbCollections.cctv)) {
-                const remarks = (cctv.remarks || '').toLowerCase();
-                const st = (cctv.status || '').toLowerCase();
-                if (remarks.includes('hdd') || remarks.includes('dvr') || remarks.includes('replace')) {
-                    addPendingRow(cctv.branchCode, `CCTV DVR/HDD Replacement Required (${cctv.remarks})`, 'Needs Parts', 'Storage Alert', `<button onclick="switchTab('cctv')" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold px-2.5 py-1 rounded-lg transition">Check CCTV</button>`);
-                } else if (st === 'offline') {
-                    addPendingRow(cctv.branchCode, 'CCTV Surveillance Unit Offline', 'Offline', 'Stream Lost', `<button onclick="switchTab('cctv')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">Diagnose</button>`);
-                }
-            }
-
-            // Scan Face Recognition & Mikrotik for offline status
-            for (const [id, fr] of Object.entries(window.dbCollections.faceRecognition)) {
-                if ((fr.status || '').toLowerCase() === 'offline') {
-                    addPendingRow(fr.branchCode, 'Face Recognition Biometric Offline', 'Offline', 'Network Drop', `<button onclick="switchTab('devices'); switchDeviceSubTab('facerecog');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Biometric</button>`);
-                }
-            }
-
-            for (const [id, mik] of Object.entries(window.dbCollections.mikrotik)) {
-                if ((mik.status || '').toLowerCase() === 'offline') {
-                    addPendingRow(mik.branchCode, 'Mikrotik Router Unreachable', 'Offline', 'Gateway Down', `<button onclick="switchTab('devices'); switchDeviceSubTab('mikrotik');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Router</button>`);
-                }
-            }
-
-            if (pendingRowsCount === 0) {
-                pendingTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400"><i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>All systems operational! No pending issues require your attention right now.</td></tr>`;
-            }
-            document.getElementById('pending-count-badge').innerText = `${pendingRowsCount} items`;
-
-            // 3. Asset Distribution by Device Type
-            let desktops = 0;
-            let laptops = 0;
-            let servers = 0;
-            let networkDevs = totalMik;
-            let cctvUnits = totalCctv;
-            let biometricUnits = totalFr;
-
-            for (const comp of Object.values(window.dbCollections.computers)) {
-                const cat = (comp.category || comp.machineType || comp.deviceFamily || '').toLowerCase();
-                if (cat.includes('laptop') || cat.includes('notebook')) laptops++;
-                else if (cat.includes('server')) servers++;
-                else desktops++; // Default primary computer category
-            }
-
-            const totalHardware = desktops + laptops + servers + networkDevs + cctvUnits + biometricUnits;
-            document.getElementById('dist-total-count').innerText = `${totalHardware} units`;
-
-            const calcPct = (cnt) => totalHardware > 0 ? Math.round((cnt / totalHardware) * 100) : 0;
-
-            const distContainer = document.getElementById('asset-distribution-bars');
-            distContainer.innerHTML = `
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Desktops</span><span class="font-mono text-slate-500">${desktops} (${calcPct(desktops)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-red-600 h-full rounded-full" style="width: ${calcPct(desktops)}%"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Laptops</span><span class="font-mono text-slate-500">${laptops} (${calcPct(laptops)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: ${calcPct(laptops)}%"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Servers</span><span class="font-mono text-slate-500">${servers} (${calcPct(servers)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-purple-600 h-full rounded-full" style="width: ${calcPct(servers)}%"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Network Routers (Mikrotik)</span><span class="font-mono text-slate-500">${networkDevs} (${calcPct(networkDevs)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-full rounded-full" style="width: ${calcPct(networkDevs)}%"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">CCTV Surveillance</span><span class="font-mono text-slate-500">${cctvUnits} (${calcPct(cctvUnits)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-amber-500 h-full rounded-full" style="width: ${calcPct(cctvUnits)}%"></div></div>
-                </div>
-                <div>
-                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Face Recognition / Biometrics</span><span class="font-mono text-slate-500">${biometricUnits} (${calcPct(biometricUnits)}%)</span></div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: ${calcPct(biometricUnits)}%"></div></div>
-                </div>
-            `;
-
-            // 4. Recent Activity Stream
-            const activityList = document.getElementById('recent-activity-list');
-            activityList.innerHTML = '';
-            
-            const activities = [];
-            for (const comp of Object.values(window.dbCollections.computers)) {
-                activities.push({ text: `Computer asset registered/updated for branch code <b>${comp.branchCode || 'HQ'}</b> (${comp.model || 'Standard PC'})`, time: comp.osTicket ? `Ticket #${comp.osTicket}` : 'Cloud Synced', icon: 'fa-laptop', color: 'text-red-600 bg-red-50 dark:bg-red-950/50' });
-            }
-            for (const branch of Object.values(window.dbCollections.branches)) {
-                activities.push({ text: `Branch location <b>${branch.branchName || branch.branchCode}</b> status updated (${branch.isp || 'Online'})`, time: branch.contactNo || 'Active Branch', icon: 'fa-store', color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50' });
-            }
-            for (const cctv of Object.values(window.dbCollections.cctv)) {
-                activities.push({ text: `CCTV surveillance unit registered for <b>${cctv.branchCode || 'Branch'}</b> (${cctv.cameraCount || 'Multiple'} cameras)`, time: cctv.storage || 'Storage Active', icon: 'fa-video', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50' });
-            }
-
-            if (activities.length === 0) {
-                activityList.innerHTML = `<div class="py-4 text-center text-xs text-slate-400">No recent activity records found in current database.</div>`;
-            } else {
-                // Show up to 5 recent items
-                activities.slice(0, 5).forEach(act => {
-                    const item = document.createElement('div');
-                    item.className = "py-2.5 flex items-center justify-between text-xs";
-                    item.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${act.color}"><i class="fa-solid ${act.icon} text-xs"></i></div>
-                            <span class="text-slate-700 dark:text-slate-300">${act.text}</span>
-                        </div>
-                        <span class="font-mono text-[11px] text-slate-400 shrink-0 ml-3">${act.time}</span>
-                    `;
-                    activityList.appendChild(item);
-                });
-            }
-        }
-
         function openModal(type, mode, recordId = null) {
             currentModalType = type;
             currentModalMode = mode;
@@ -1279,13 +1589,30 @@
                     <select id="m-status" class="${fieldClass}">
                         <option value="Online" ${currentStatus.toLowerCase() === 'online' ? 'selected' : ''}>Online</option>
                         <option value="Offline" ${currentStatus.toLowerCase() === 'offline' ? 'selected' : ''}>Offline</option>
+                        ${type !== 'branch' ? `
                         <option value="Defective" ${currentStatus.toLowerCase() === 'defective' ? 'selected' : ''}>Defective</option>
                         <option value="Under Repair" ${currentStatus.toLowerCase() === 'under repair' ? 'selected' : ''}>Under Repair</option>
-                        <option value="For Deployment" ${currentStatus.toLowerCase() === 'for deployment' ? 'selected' : ''}>For Deployment</option>
+                        <option value="For Deployment" ${currentStatus.toLowerCase() === 'for deployment' ? 'selected' : ''}>For Deployment</option>` : ''}
                     </select>
                 </div>`;
 
-            if (type === 'computer') {
+            if (type === 'branch') {
+                body.innerHTML = `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><label class="${labelClass}">Branch Name</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Location</label><input type="text" id="m-location" value="${data.location || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">ISP Connection</label><select id="m-isp" class="${fieldClass}"><option ${data.isp==='PLDT'?'selected':''}>PLDT</option><option ${data.isp==='Globe'?'selected':''}>Globe</option><option ${data.isp==='Converge'?'selected':''}>Converge</option></select></div>
+                        <div><label class="${labelClass}">Connection Type</label><input type="text" id="m-connectionType" value="${data.connectionType || 'Fiber Dedicated'}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Router IP</label><input type="text" id="m-routerIp" value="${data.routerIp || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Gateway</label><input type="text" id="m-gateway" value="${data.gateway || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">LAN Subnet</label><input type="text" id="m-subnet" value="${data.subnet || ''}" class="${fieldClass}"></div>
+                        ${statusSelectHTML}
+                        <div class="sm:col-span-2"><label class="${labelClass}">Maintenance & Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
+                    </div>`;
+            } else if (type === 'computer') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">TSE Name</label><input type="text" id="m-tseName" value="${data.tseName || ''}" class="${fieldClass}"></div>
@@ -1370,10 +1697,10 @@
                         ${statusSelectHTML}
                         <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
-            } else if (type === 'branch' || type === 'hub') {
+            } else if (type === 'hub') {
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div><label class="${labelClass}">Branch / Hub Name (Include 'HUB' if delivery hub)</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
+                        <div><label class="${labelClass}">Hub Name (Include 'HUB')</label><input type="text" id="m-branchName" value="${data.branchName || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Location</label><input type="text" id="m-location" value="${data.location || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="${fieldClass}"></div>
@@ -1424,10 +1751,8 @@
             if (currentModalType === 'facerecog') colName = 'faceRecognition';
             if (currentModalType === 'mikrotik') colName = 'mikrotik';
             if (currentModalType === 'cctv') colName = 'cctv';
-            if (currentModalType === 'branch' || currentModalType === 'hub') {
-                const bName = (payload.branchName || '').toUpperCase();
-                colName = bName.includes('HUB') ? 'hubs' : 'branches';
-            }
+            if (currentModalType === 'branch') colName = 'branches';
+            if (currentModalType === 'hub') colName = 'hubs';
 
             if (payload.ipAddress && payload.ipAddress.trim() !== '') {
                 const targetIp = payload.ipAddress.trim();
@@ -1452,6 +1777,7 @@
                 }
                 closeModal();
                 loadAllDataFromFirebase();
+                showToast("Record saved successfully!");
             } catch (e) {
                 console.error("Error saving record:", e);
                 alert("Failed to save record to Firebase.");
@@ -1463,6 +1789,7 @@
                 try {
                     await window.deleteDoc(window.doc(window.firebaseDb, colName, id));
                     loadAllDataFromFirebase();
+                    showToast("Record deleted successfully.");
                 } catch (e) {
                     console.error("Error deleting record:", e);
                 }
@@ -1517,6 +1844,7 @@
 
         function filterCards(type) {
             const input = document.getElementById(`search-${type}`);
+            if(!input) return;
             const filter = input.value.toLowerCase();
             document.querySelectorAll(`#${type}-cards-grid > div`).forEach(card => {
                 card.style.display = card.textContent.toLowerCase().includes(filter) ? '' : 'none';
