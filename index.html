@@ -154,6 +154,30 @@
 
         <!-- ================= DASHBOARD TAB ================= -->
         <div id="tab-dashboard" class="tab-content space-y-6">
+            
+            <!-- Quick Actions Toolbar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 dark:text-slate-100">System Overview & Monitoring</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Live summary of connected cloud inventory, asset health, and items requiring action.</p>
+                </div>
+                <div class="flex items-center flex-wrap gap-2">
+                    <button onclick="openModal('computer', 'add')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-laptop text-[11px]"></i><span>Add Device</span>
+                    </button>
+                    <button onclick="openModal('branch', 'add')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-store text-[11px]"></i><span>Add Branch</span>
+                    </button>
+                    <button onclick="openModal('cctv', 'add')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-video text-[11px]"></i><span>Register CCTV</span>
+                    </button>
+                    <button onclick="exportDataJSON()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-[11px]"></i><span>Export Inventory</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing Four Summary Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
                     <div>
@@ -184,6 +208,112 @@
                     <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-video"></i></div>
                 </div>
             </div>
+
+            <!-- 1. Asset Health Overview -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"><i class="fa-solid fa-heart-pulse text-red-600 mr-1.5"></i> Asset Health Overview</h3>
+                    <span class="text-[10px] text-slate-400 font-medium">Real-time status breakdown</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div class="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 p-3.5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Operational</p>
+                            <h4 id="health-operational" class="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-circle-check"></i></div>
+                    </div>
+                    <div class="bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 p-3.5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Offline</p>
+                            <h4 id="health-offline" class="text-2xl font-black text-rose-700 dark:text-rose-300 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-3.5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Defective</p>
+                            <h4 id="health-defective" class="text-2xl font-black text-amber-700 dark:text-amber-300 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-300 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-ban"></i></div>
+                    </div>
+                    <div class="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 p-3.5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Under Repair</p>
+                            <h4 id="health-repair" class="text-2xl font-black text-blue-700 dark:text-blue-300 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                    </div>
+                    <div class="bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 p-3.5 rounded-xl flex items-center justify-between col-span-2 sm:col-span-1">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">For Deployment</p>
+                            <h4 id="health-deployment" class="text-2xl font-black text-purple-700 dark:text-purple-300 mt-0.5">0</h4>
+                        </div>
+                        <div class="w-9 h-9 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid fa-box-archive"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Layout for Pending Actions & Asset Distribution -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- 2. Pending Actions (8 cols) -->
+                <div class="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-xs uppercase tracking-wider"><i class="fa-solid fa-clipboard-list text-red-600 mr-1.5"></i> Pending Actions Required</h3>
+                            <span id="pending-count-badge" class="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full">0 items</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400">Offline units & BIR patch alerts</span>
+                    </div>
+                    <div class="overflow-x-auto flex-1">
+                        <table id="table-pending-actions" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold text-[10px]">
+                                <tr>
+                                    <th class="p-3">Branch Code</th>
+                                    <th class="p-3">Issue</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Last Updated</th>
+                                    <th class="p-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. Asset Distribution (4 cols) -->
+                <div class="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-xs uppercase tracking-wider"><i class="fa-solid fa-chart-bar text-red-600 mr-1.5"></i> Asset Distribution</h3>
+                            <span class="text-[10px] text-slate-400">By Device Type</span>
+                        </div>
+                        <div id="asset-distribution-bars" class="space-y-3.5 pt-1">
+                            <!-- Dynamically populated chart bars -->
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Total Tracked Hardware</span>
+                        <span id="dist-total-count" class="font-bold text-slate-800 dark:text-slate-100">0 units</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 4. Recent Activity -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"><i class="fa-solid fa-clock-rotate-left text-red-600 mr-1.5"></i> Recent System Activity</h3>
+                    <span class="text-[10px] text-slate-400 font-medium">Synchronized event feed</span>
+                </div>
+                <div id="recent-activity-list" class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
         </div>
 
         <!-- ================= DEVICES TAB ================= -->
@@ -747,7 +877,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                `;
             return tr;
         }
 
@@ -804,7 +934,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                `;
             return tr;
         }
 
@@ -828,7 +958,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                `;
             return tr;
         }
 
@@ -852,7 +982,7 @@
                 <td class="p-3.5 text-right space-x-1">
                     <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                `;
             return tr;
         }
 
@@ -938,10 +1068,185 @@
             const hubStat = document.getElementById('stat-hubs');
             const cctvStat = document.getElementById('stat-cctv');
 
-            if(devStat) devStat.innerText = Object.keys(window.dbCollections.computers).length + Object.keys(window.dbCollections.faceRecognition).length + Object.keys(window.dbCollections.mikrotik).length;
-            if(branchStat) branchStat.innerText = Object.keys(window.dbCollections.branches).length;
-            if(hubStat) hubStat.innerText = Object.keys(window.dbCollections.hubs).length;
-            if(cctvStat) cctvStat.innerText = Object.keys(window.dbCollections.cctv).length;
+            const totalComps = Object.keys(window.dbCollections.computers).length;
+            const totalFr = Object.keys(window.dbCollections.faceRecognition).length;
+            const totalMik = Object.keys(window.dbCollections.mikrotik).length;
+            const totalCctv = Object.keys(window.dbCollections.cctv).length;
+            const totalBranches = Object.keys(window.dbCollections.branches).length;
+            const totalHubs = Object.keys(window.dbCollections.hubs).length;
+
+            if(devStat) devStat.innerText = totalComps + totalFr + totalMik;
+            if(branchStat) branchStat.innerText = totalBranches;
+            if(hubStat) hubStat.innerText = totalHubs;
+            if(cctvStat) cctvStat.innerText = totalCctv;
+
+            // 1. Calculate Asset Health Overview from actual inventory data
+            let operational = 0;
+            let offline = 0;
+            let defective = 0;
+            let underRepair = 0;
+            let forDeployment = 0;
+
+            const evaluateStatus = (st) => {
+                const s = (st || '').trim().toLowerCase();
+                if (s === 'online' || s === 'active' || s === 'operational' || s === 'running') operational++;
+                else if (s === 'offline' || s === 'disconnected') offline++;
+                else if (s === 'defective' || s === 'broken') defective++;
+                else if (s === 'repair' || s === 'under repair' || s === 'maintenance') underRepair++;
+                else if (s === 'deployment' || s === 'for deployment' || s === 'new' || s === 'spare') forDeployment++;
+                else operational++; // Default fallback for healthy records
+            };
+
+            for (const item of Object.values(window.dbCollections.computers)) evaluateStatus(item.status || item.actualStatus);
+            for (const item of Object.values(window.dbCollections.faceRecognition)) evaluateStatus(item.status);
+            for (const item of Object.values(window.dbCollections.mikrotik)) evaluateStatus(item.status);
+            for (const item of Object.values(window.dbCollections.cctv)) evaluateStatus(item.status);
+
+            document.getElementById('health-operational').innerText = operational;
+            document.getElementById('health-offline').innerText = offline;
+            document.getElementById('health-defective').innerText = defective;
+            document.getElementById('health-repair').innerText = underRepair;
+            document.getElementById('health-deployment').innerText = forDeployment;
+
+            // 2. Populate Pending Actions Table
+            const pendingTbody = document.querySelector('#table-pending-actions tbody');
+            pendingTbody.innerHTML = '';
+            let pendingRowsCount = 0;
+
+            const addPendingRow = (branchCode, issueText, statusText, updateTime, actionHtml) => {
+                pendingRowsCount++;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-red-600 dark:text-red-400">${branchCode || 'N/A'}</td>
+                    <td class="p-3 font-medium text-slate-800 dark:text-slate-100">${issueText}</td>
+                    <td class="p-3"><span class="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] px-2 py-0.5 rounded-full font-bold">${statusText}</span></td>
+                    <td class="p-3 font-mono text-slate-400 text-[11px]">${updateTime || 'Recent'}</td>
+                    <td class="p-3 text-right">${actionHtml}</td>
+                `;
+                pendingTbody.appendChild(tr);
+            };
+
+            // Scan Computers for issues (Offline status, un-enrolled ITAMS/SOTI, or PTU pending)
+            for (const [id, comp] of Object.entries(window.dbCollections.computers)) {
+                const st = (comp.status || comp.actualStatus || '').toLowerCase();
+                if (st === 'offline') {
+                    addPendingRow(comp.branchCode, 'Computer Unit Offline / Disconnected', 'Offline', comp.osTicket || 'Active Check', `<button onclick="switchTab('devices')" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-2.5 py-1 rounded-lg transition">Inspect</button>`);
+                }
+                if (comp.ptuStatus && comp.ptuStatus.toLowerCase().includes('pending')) {
+                    addPendingRow(comp.branchCode, 'Branch Awaiting BIR / PTU Patch', 'Pending BIR', comp.osTicket || 'Unpatched', `<button onclick="switchTab('devices')" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-semibold px-2.5 py-1 rounded-lg transition">Review PTU</button>`);
+                }
+            }
+
+            // Scan CCTV for DVR / HDD replacements or offline status
+            for (const [id, cctv] of Object.entries(window.dbCollections.cctv)) {
+                const remarks = (cctv.remarks || '').toLowerCase();
+                const st = (cctv.status || '').toLowerCase();
+                if (remarks.includes('hdd') || remarks.includes('dvr') || remarks.includes('replace')) {
+                    addPendingRow(cctv.branchCode, `CCTV DVR/HDD Replacement Required (${cctv.remarks})`, 'Needs Parts', 'Storage Alert', `<button onclick="switchTab('cctv')" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold px-2.5 py-1 rounded-lg transition">Check CCTV</button>`);
+                } else if (st === 'offline') {
+                    addPendingRow(cctv.branchCode, 'CCTV Surveillance Unit Offline', 'Offline', 'Stream Lost', `<button onclick="switchTab('cctv')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">Diagnose</button>`);
+                }
+            }
+
+            // Scan Face Recognition & Mikrotik for offline status
+            for (const [id, fr] of Object.entries(window.dbCollections.faceRecognition)) {
+                if ((fr.status || '').toLowerCase() === 'offline') {
+                    addPendingRow(fr.branchCode, 'Face Recognition Biometric Offline', 'Offline', 'Network Drop', `<button onclick="switchTab('devices'); switchDeviceSubTab('facerecog');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Biometric</button>`);
+                }
+            }
+
+            for (const [id, mik] of Object.entries(window.dbCollections.mikrotik)) {
+                if ((mik.status || '').toLowerCase() === 'offline') {
+                    addPendingRow(mik.branchCode, 'Mikrotik Router Unreachable', 'Offline', 'Gateway Down', `<button onclick="switchTab('devices'); switchDeviceSubTab('mikrotik');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">View Router</button>`);
+                }
+            }
+
+            if (pendingRowsCount === 0) {
+                pendingTbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400"><i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>All systems operational! No pending issues require your attention right now.</td></tr>`;
+            }
+            document.getElementById('pending-count-badge').innerText = `${pendingRowsCount} items`;
+
+            // 3. Asset Distribution by Device Type
+            let desktops = 0;
+            let laptops = 0;
+            let servers = 0;
+            let networkDevs = totalMik;
+            let cctvUnits = totalCctv;
+            let biometricUnits = totalFr;
+
+            for (const comp of Object.values(window.dbCollections.computers)) {
+                const cat = (comp.category || comp.machineType || comp.deviceFamily || '').toLowerCase();
+                if (cat.includes('laptop') || cat.includes('notebook')) laptops++;
+                else if (cat.includes('server')) servers++;
+                else desktops++; // Default primary computer category
+            }
+
+            const totalHardware = desktops + laptops + servers + networkDevs + cctvUnits + biometricUnits;
+            document.getElementById('dist-total-count').innerText = `${totalHardware} units`;
+
+            const calcPct = (cnt) => totalHardware > 0 ? Math.round((cnt / totalHardware) * 100) : 0;
+
+            const distContainer = document.getElementById('asset-distribution-bars');
+            distContainer.innerHTML = `
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Desktops</span><span class="font-mono text-slate-500">${desktops} (${calcPct(desktops)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-red-600 h-full rounded-full" style="width: ${calcPct(desktops)}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Laptops</span><span class="font-mono text-slate-500">${laptops} (${calcPct(laptops)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: ${calcPct(laptops)}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Servers</span><span class="font-mono text-slate-500">${servers} (${calcPct(servers)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-purple-600 h-full rounded-full" style="width: ${calcPct(servers)}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Network Routers (Mikrotik)</span><span class="font-mono text-slate-500">${networkDevs} (${calcPct(networkDevs)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-full rounded-full" style="width: ${calcPct(networkDevs)}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">CCTV Surveillance</span><span class="font-mono text-slate-500">${cctvUnits} (${calcPct(cctvUnits)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-amber-500 h-full rounded-full" style="width: ${calcPct(cctvUnits)}%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1 font-medium"><span class="text-slate-700 dark:text-slate-300">Face Recognition / Biometrics</span><span class="font-mono text-slate-500">${biometricUnits} (${calcPct(biometricUnits)}%)</span></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: ${calcPct(biometricUnits)}%"></div></div>
+                </div>
+            `;
+
+            // 4. Recent Activity Stream
+            const activityList = document.getElementById('recent-activity-list');
+            activityList.innerHTML = '';
+            
+            const activities = [];
+            for (const comp of Object.values(window.dbCollections.computers)) {
+                activities.push({ text: `Computer asset registered/updated for branch code <b>${comp.branchCode || 'HQ'}</b> (${comp.model || 'Standard PC'})`, time: comp.osTicket ? `Ticket #${comp.osTicket}` : 'Cloud Synced', icon: 'fa-laptop', color: 'text-red-600 bg-red-50 dark:bg-red-950/50' });
+            }
+            for (const branch of Object.values(window.dbCollections.branches)) {
+                activities.push({ text: `Branch location <b>${branch.branchName || branch.branchCode}</b> status updated (${branch.isp || 'Online'})`, time: branch.contactNo || 'Active Branch', icon: 'fa-store', color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50' });
+            }
+            for (const cctv of Object.values(window.dbCollections.cctv)) {
+                activities.push({ text: `CCTV surveillance unit registered for <b>${cctv.branchCode || 'Branch'}</b> (${cctv.cameraCount || 'Multiple'} cameras)`, time: cctv.storage || 'Storage Active', icon: 'fa-video', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50' });
+            }
+
+            if (activities.length === 0) {
+                activityList.innerHTML = `<div class="py-4 text-center text-xs text-slate-400">No recent activity records found in current database.</div>`;
+            } else {
+                // Show up to 5 recent items
+                activities.slice(0, 5).forEach(act => {
+                    const item = document.createElement('div');
+                    item.className = "py-2.5 flex items-center justify-between text-xs";
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${act.color}"><i class="fa-solid ${act.icon} text-xs"></i></div>
+                            <span class="text-slate-700 dark:text-slate-300">${act.text}</span>
+                        </div>
+                        <span class="font-mono text-[11px] text-slate-400 shrink-0 ml-3">${act.time}</span>
+                    `;
+                    activityList.appendChild(item);
+                });
+            }
         }
 
         function openModal(type, mode, recordId = null) {
@@ -974,6 +1279,9 @@
                     <select id="m-status" class="${fieldClass}">
                         <option value="Online" ${currentStatus.toLowerCase() === 'online' ? 'selected' : ''}>Online</option>
                         <option value="Offline" ${currentStatus.toLowerCase() === 'offline' ? 'selected' : ''}>Offline</option>
+                        <option value="Defective" ${currentStatus.toLowerCase() === 'defective' ? 'selected' : ''}>Defective</option>
+                        <option value="Under Repair" ${currentStatus.toLowerCase() === 'under repair' ? 'selected' : ''}>Under Repair</option>
+                        <option value="For Deployment" ${currentStatus.toLowerCase() === 'for deployment' ? 'selected' : ''}>For Deployment</option>
                     </select>
                 </div>`;
 
