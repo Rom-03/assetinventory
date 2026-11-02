@@ -417,6 +417,10 @@
                                 <button onclick="setInventoryType('mikrotik', 'branch')" id="btn-mikrotik-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
                                 <button onclick="setInventoryType('mikrotik', 'hub')" id="btn-mikrotik-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
                             </div>
+                            <!-- Ping All Routers Button -->
+                            <button onclick="pingAllMikrotikRouters()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 shadow-sm">
+                                <i class="fa-solid fa-satellite-dish"></i><span>Ping All Routers</span>
+                            </button>
                             <button onclick="exportTableToCSV('table-mikrotik', 'mikrotik_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
                         <div class="flex items-center">
@@ -1050,11 +1054,81 @@
             return tr;
         }
 
+        async function checkMikrotikStatusLive(id, ipAddress, silent = false) {
+            if (!ipAddress) {
+                if (!silent) showToast('No IP address configured for this router.');
+                return 'Offline';
+            }
+
+            if (!silent) showToast(`Pinging router at ${ipAddress}...`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+            try {
+                await fetch(`http://${ipAddress}/`, { 
+                    mode: 'no-cors', 
+                    signal: controller.signal 
+                });
+                clearTimeout(timeoutId);
+
+                await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: 'Online' });
+                window.dbCollections.mikrotik[id].status = 'Online';
+                
+                // Update UI badge instantly without full page reload
+                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[6];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge('Online');
+                }
+                
+                if (!silent) showToast(`Router ${ipAddress} is ONLINE!`);
+                return 'Online';
+            } catch (error) {
+                clearTimeout(timeoutId);
+
+                await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: 'Offline' });
+                window.dbCollections.mikrotik[id].status = 'Offline';
+                
+                // Update UI badge instantly without full page reload
+                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[6];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
+                }
+
+                if (!silent) showToast(`Router ${ipAddress} is OFFLINE / Unreachable.`);
+                return 'Offline';
+            }
+        }
+
+        async function pingAllMikrotikRouters() {
+            const routers = window.dbCollections.mikrotik;
+            const entries = Object.entries(routers);
+            if (entries.length === 0) {
+                showToast('No Mikrotik routers to ping.');
+                return;
+            }
+
+            showToast(`Pinging all ${entries.length} Mikrotik routers simultaneously...`);
+            
+            const promises = entries.map(([id, data]) => checkMikrotikStatusLive(id, data.ipAddress, true));
+            await Promise.all(promises);
+
+            showToast('Finished pinging all routers!');
+            updateDashboardStats();
+        }
+
         function renderMikrotikRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
 
-            const ipDisplay = data.ipAddress ? `<button onclick="copyToClipboard('${data.ipAddress}', 'IP address copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.ipAddress}</button>` : '';
+            const ipDisplay = data.ipAddress ? `
+                <div class="flex items-center space-x-1.5">
+                    <a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress}</a>
+                    <button onclick="checkMikrotikStatusLive('${id}', '${data.ipAddress}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded transition" title="Test Live Status"><i class="fa-solid fa-rotate"></i></button>
+                </div>` : '';
+
             const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
@@ -1673,6 +1747,7 @@
                         <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'mikrotik') {
+                // STATUS REMOVED FROM MIKROTIK FORM (Live ping based only)
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
@@ -1681,7 +1756,6 @@
                         <div><label class="${labelClass}">Firmware Version</label><input type="text" id="m-firmwareVersion" value="${data.firmwareVersion || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
-                        ${statusSelectHTML}
                         <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'cctv') {
@@ -1746,6 +1820,12 @@
                 const key = input.id.replace('m-', '');
                 payload[key] = input.value;
             });
+
+            // Default status for new Mikrotik routers if not present
+            if (currentModalType === 'mikrotik' && !payload.status) {
+                const existing = (editingRecordId && window.dbCollections.mikrotik[editingRecordId]) ? window.dbCollections.mikrotik[editingRecordId].status : 'Online';
+                payload.status = existing || 'Online';
+            }
 
             let colName = 'computers';
             if (currentModalType === 'facerecog') colName = 'faceRecognition';
