@@ -60,6 +60,11 @@
           if(savedTab === 'devices') {
               switchDeviceSubTab(savedSubTab, false);
           }
+
+          // Setup Automatic Ping Sync every 5 minutes (300000 ms)
+          setInterval(() => {
+              autoPingAllNetworkDevices();
+          }, 300000);
       });
     </script>
 
@@ -96,6 +101,12 @@
             </div>
             
             <div class="flex items-center space-x-1.5 sm:space-x-3">
+                <!-- Sync Loader Indicator -->
+                <div id="sync-loader" class="hidden items-center space-x-1.5 text-xs text-sky-400 bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-arrows-rotate fa-spin text-xs"></i>
+                    <span class="text-[11px] font-medium hidden sm:inline">Syncing...</span>
+                </div>
+
                 <!-- Dark Mode Toggle -->
                 <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-slate-700 text-xs flex items-center justify-center transition-all" title="Toggle Dark/Light Mode">
                     <i id="theme-icon" class="fa-solid fa-moon text-amber-400 text-xs sm:text-sm"></i>
@@ -376,6 +387,10 @@
                                 <button onclick="setInventoryType('facerecog', 'branch')" id="btn-fr-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
                                 <button onclick="setInventoryType('facerecog', 'hub')" id="btn-fr-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
                             </div>
+                            <!-- Ping All Face Recognition Devices Button -->
+                            <button onclick="pingAllFaceRecogDevices()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 shadow-sm">
+                                <i class="fa-solid fa-satellite-dish"></i><span>Ping All Devices</span>
+                            </button>
                             <button onclick="exportTableToCSV('table-facerecog', 'facerecognition_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
                         <div class="flex items-center">
@@ -556,6 +571,10 @@
                             <button onclick="setInventoryType('cctv', 'branch')" id="btn-cctv-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
                             <button onclick="setInventoryType('cctv', 'hub')" id="btn-cctv-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
                         </div>
+                        <!-- Ping All CCTV Button -->
+                        <button onclick="pingAllCctvDevices()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 shadow-sm">
+                            <i class="fa-solid fa-satellite-dish"></i><span>Ping All Units</span>
+                        </button>
                         <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                     </div>
                     <div class="flex items-center">
@@ -726,6 +745,22 @@
             cctv: {}
         };
 
+        function showSyncLoader() {
+            const loader = document.getElementById('sync-loader');
+            if (loader) {
+                loader.classList.remove('hidden');
+                loader.classList.add('flex');
+            }
+        }
+
+        function hideSyncLoader() {
+            const loader = document.getElementById('sync-loader');
+            if (loader) {
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+            }
+        }
+
         function toggleDarkMode() {
             const html = document.documentElement;
             const icon = document.getElementById('theme-icon');
@@ -859,6 +894,7 @@
         }
 
         async function loadAllDataFromFirebase() {
+            showSyncLoader();
             try {
                 window.dbCollections = { computers: {}, faceRecognition: {}, mikrotik: {}, branches: {}, hubs: {}, cctv: {} };
                 
@@ -884,6 +920,8 @@
                 updateDashboardStats();
             } catch (e) {
                 console.error("Error loading data from Firestore:", e);
+            } finally {
+                hideSyncLoader();
             }
         }
 
@@ -1028,11 +1066,127 @@
             }
         }
 
+        // Generic Network Live Ping Logic using Image Probe (Bypasses CORS & SSL Certificate Warning Blocks)
+        async function checkDeviceStatusLive(collectionName, tableId, statusColumnIndex, id, ipAddress, silent = false) {
+            if (!ipAddress) {
+                if (!silent) showToast('No IP address configured for this device.');
+                return 'Offline';
+            }
+
+            if (!silent) showToast(`Pinging device at ${ipAddress}...`);
+            showSyncLoader();
+
+            const cleanIp = ipAddress.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+            const checkPromise = new Promise((resolve) => {
+                let isResolved = false;
+                const img = new Image();
+
+                const timer = setTimeout(() => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        img.src = '';
+                        resolve(false);
+                    }
+                }, 2500);
+
+                img.onload = () => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        clearTimeout(timer);
+                        resolve(true);
+                    }
+                };
+
+                img.onerror = () => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        clearTimeout(timer);
+                        resolve(true); // Any response / TCP socket handshake confirms device online
+                    }
+                };
+
+                // Use http:// with random query parameter to prevent browser caching
+                img.src = `http://${cleanIp}/favicon.ico?_t=${Date.now()}`;
+            });
+
+            try {
+                const isOnline = await checkPromise;
+                const finalStatus = isOnline ? 'Online' : 'Offline';
+
+                await window.updateDoc(window.doc(window.firebaseDb, collectionName, id), { status: finalStatus });
+                if (window.dbCollections[collectionName] && window.dbCollections[collectionName][id]) {
+                    window.dbCollections[collectionName][id].status = finalStatus;
+                }
+                
+                const row = document.querySelector(`#${tableId} tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[statusColumnIndex];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge(finalStatus);
+                }
+                
+                if (!silent) {
+                    if (finalStatus === 'Online') showToast(`Device ${cleanIp} is ONLINE!`);
+                    else showToast(`Device ${cleanIp} is OFFLINE / Unreachable.`);
+                }
+                return finalStatus;
+            } catch (error) {
+                await window.updateDoc(window.doc(window.firebaseDb, collectionName, id), { status: 'Offline' });
+                if (window.dbCollections[collectionName] && window.dbCollections[collectionName][id]) {
+                    window.dbCollections[collectionName][id].status = 'Offline';
+                }
+                
+                const row = document.querySelector(`#${tableId} tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[statusColumnIndex];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
+                }
+
+                if (!silent) showToast(`Device ${cleanIp} is OFFLINE / Unreachable.`);
+                return 'Offline';
+            } finally {
+                hideSyncLoader();
+            }
+        }
+
+        // Face Recognition Ping Functions
+        async function checkFaceRecogStatusLive(id, ipAddress, silent = false) {
+            return await checkDeviceStatusLive('faceRecognition', 'table-facerecog', 9, id, ipAddress, silent);
+        }
+
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function pingAllFaceRecogDevices() {
+            const devices = window.dbCollections.faceRecognition;
+            const entries = Object.entries(devices);
+            if (entries.length === 0) {
+                showToast('No Face Recognition devices to ping.');
+                return;
+            }
+
+            showToast(`Pinging ${entries.length} Face Recognition devices sequentially...`);
+            showSyncLoader();
+            
+            for (const [id, data] of entries) {
+                await checkFaceRecogStatusLive(id, data.ipAddress, true);
+                await sleep(150);
+            }
+
+            hideSyncLoader();
+            showToast('Finished pinging all Face Recognition devices!');
+            updateDashboardStats();
+        }
+
         function renderFaceRecogRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
             
-            const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
+            const ipDisplay = data.ipAddress ? `
+                <div class="flex items-center space-x-1.5">
+                    <a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress}</a>
+                    <button onclick="checkFaceRecogStatusLive('${id}', '${data.ipAddress}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded transition" title="Test Live Status"><i class="fa-solid fa-rotate"></i></button>
+                </div>` : '';
+
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
             tr.innerHTML = `
@@ -1054,52 +1208,9 @@
             return tr;
         }
 
+        // Mikrotik Ping Functions
         async function checkMikrotikStatusLive(id, ipAddress, silent = false) {
-            if (!ipAddress) {
-                if (!silent) showToast('No IP address configured for this router.');
-                return 'Offline';
-            }
-
-            if (!silent) showToast(`Pinging router at ${ipAddress}...`);
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-            try {
-                await fetch(`http://${ipAddress}/`, { 
-                    mode: 'no-cors', 
-                    signal: controller.signal 
-                });
-                clearTimeout(timeoutId);
-
-                await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: 'Online' });
-                window.dbCollections.mikrotik[id].status = 'Online';
-                
-                // Update UI badge instantly without full page reload
-                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
-                if (row) {
-                    const statusCell = row.children[6];
-                    if (statusCell) statusCell.innerHTML = getStatusBadge('Online');
-                }
-                
-                if (!silent) showToast(`Router ${ipAddress} is ONLINE!`);
-                return 'Online';
-            } catch (error) {
-                clearTimeout(timeoutId);
-
-                await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: 'Offline' });
-                window.dbCollections.mikrotik[id].status = 'Offline';
-                
-                // Update UI badge instantly without full page reload
-                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
-                if (row) {
-                    const statusCell = row.children[6];
-                    if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
-                }
-
-                if (!silent) showToast(`Router ${ipAddress} is OFFLINE / Unreachable.`);
-                return 'Offline';
-            }
+            return await checkDeviceStatusLive('mikrotik', 'table-mikrotik', 6, id, ipAddress, silent);
         }
 
         async function pingAllMikrotikRouters() {
@@ -1110,12 +1221,16 @@
                 return;
             }
 
-            showToast(`Pinging all ${entries.length} Mikrotik routers simultaneously...`);
+            showToast(`Pinging ${entries.length} routers sequentially to prevent timeouts...`);
+            showSyncLoader();
             
-            const promises = entries.map(([id, data]) => checkMikrotikStatusLive(id, data.ipAddress, true));
-            await Promise.all(promises);
+            for (const [id, data] of entries) {
+                await checkMikrotikStatusLive(id, data.ipAddress, true);
+                await sleep(150); 
+            }
 
-            showToast('Finished pinging all routers!');
+            hideSyncLoader();
+            showToast('Finished pinging all routers reliably!');
             updateDashboardStats();
         }
 
@@ -1148,11 +1263,42 @@
             return tr;
         }
 
+        // CCTV Ping Functions
+        async function checkCctvStatusLive(id, ipAddress, silent = false) {
+            return await checkDeviceStatusLive('cctv', 'table-cctv', 7, id, ipAddress, silent);
+        }
+
+        async function pingAllCctvDevices() {
+            const devices = window.dbCollections.cctv;
+            const entries = Object.entries(devices);
+            if (entries.length === 0) {
+                showToast('No CCTV units to ping.');
+                return;
+            }
+
+            showToast(`Pinging ${entries.length} CCTV units sequentially...`);
+            showSyncLoader();
+            
+            for (const [id, data] of entries) {
+                await checkCctvStatusLive(id, data.ipAddress, true);
+                await sleep(150);
+            }
+
+            hideSyncLoader();
+            showToast('Finished pinging all CCTV units!');
+            updateDashboardStats();
+        }
+
         function renderCctvRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
 
-            const ipDisplay = data.ipAddress ? `<a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress} <i class="fa-solid fa-external-link-alt ml-1 text-[10px]"></i></a>` : '';
+            const ipDisplay = data.ipAddress ? `
+                <div class="flex items-center space-x-1.5">
+                    <a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress}</a>
+                    <button onclick="checkCctvStatusLive('${id}', '${data.ipAddress}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded transition" title="Test Live Status"><i class="fa-solid fa-rotate"></i></button>
+                </div>` : '';
+
             const userDisplay = data.username ? `<button onclick="copyToClipboard('${data.username}', 'Username copied!')" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded font-mono text-xs">${data.username}</button>` : '';
 
             tr.innerHTML = `
@@ -1170,6 +1316,29 @@
                     <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
                 </td>`;
             return tr;
+        }
+
+        // Automatic Background Refresh Ping (Every 5 minutes)
+        async function autoPingAllNetworkDevices() {
+            showSyncLoader();
+            showToast('Automatic 5-min status check initiating...');
+            
+            for (const [id, d] of Object.entries(window.dbCollections.mikrotik)) {
+                await checkMikrotikStatusLive(id, d.ipAddress, true);
+                await sleep(150);
+            }
+            for (const [id, d] of Object.entries(window.dbCollections.faceRecognition)) {
+                await checkFaceRecogStatusLive(id, d.ipAddress, true);
+                await sleep(150);
+            }
+            for (const [id, d] of Object.entries(window.dbCollections.cctv)) {
+                await checkCctvStatusLive(id, d.ipAddress, true);
+                await sleep(150);
+            }
+
+            hideSyncLoader();
+            showToast('Automated device ping sync complete.');
+            updateDashboardStats();
         }
 
         // ================= DASHBOARD METRICS CALCULATOR =================
@@ -1584,13 +1753,16 @@
 
         function confirmDeleteBranch(id, branchName) {
             showWarningModal('Delete Branch Location', `Are you sure you want to delete branch "${branchName}"? This action cannot be undone.`, async () => {
+                showSyncLoader();
                 try {
                     await window.deleteDoc(window.doc(window.firebaseDb, 'branches', id));
-                    loadAllDataFromFirebase();
+                    await loadAllDataFromFirebase();
                     showToast(`Successfully deleted branch: ${branchName}`);
                 } catch (e) {
                     console.error("Error deleting branch:", e);
                     alert("Failed to delete branch record.");
+                } finally {
+                    hideSyncLoader();
                 }
             });
         }
@@ -1743,11 +1915,9 @@
                         <div><label class="${labelClass}">MAC Address</label><input type="text" id="m-macAddress" value="${data.macAddress || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
-                        ${statusSelectHTML}
                         <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'mikrotik') {
-                // STATUS REMOVED FROM MIKROTIK FORM (Live ping based only)
                 body.innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div><label class="${labelClass}">Branch Code</label><input type="text" id="m-branchCode" value="${data.branchCode || ''}" class="${fieldClass}"></div>
@@ -1768,7 +1938,6 @@
                         <div><label class="${labelClass}">Storage</label><input type="text" id="m-storage" value="${data.storage || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Username</label><input type="text" id="m-username" value="${data.username || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Password</label><input type="text" id="m-password" value="${data.password || ''}" class="${fieldClass}"></div>
-                        ${statusSelectHTML}
                         <div class="sm:col-span-2"><label class="${labelClass}">Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'hub') {
@@ -1821,9 +1990,10 @@
                 payload[key] = input.value;
             });
 
-            // Default status for new Mikrotik routers if not present
-            if (currentModalType === 'mikrotik' && !payload.status) {
-                const existing = (editingRecordId && window.dbCollections.mikrotik[editingRecordId]) ? window.dbCollections.mikrotik[editingRecordId].status : 'Online';
+            if (['mikrotik', 'facerecog', 'cctv'].includes(currentModalType) && !payload.status) {
+                let existingCol = currentModalType;
+                if (currentModalType === 'facerecog') existingCol = 'faceRecognition';
+                const existing = (editingRecordId && window.dbCollections[existingCol]?.[editingRecordId]) ? window.dbCollections[existingCol][editingRecordId].status : 'Online';
                 payload.status = existing || 'Online';
             }
 
@@ -1849,6 +2019,7 @@
                 }
             }
 
+            showSyncLoader();
             try {
                 if (currentModalMode === 'edit' && editingRecordId) {
                     await window.updateDoc(window.doc(window.firebaseDb, colName, editingRecordId), payload);
@@ -1856,22 +2027,27 @@
                     await window.addDoc(window.collection(window.firebaseDb, colName), payload);
                 }
                 closeModal();
-                loadAllDataFromFirebase();
+                await loadAllDataFromFirebase();
                 showToast("Record saved successfully!");
             } catch (e) {
                 console.error("Error saving record:", e);
                 alert("Failed to save record to Firebase.");
+            } finally {
+                hideSyncLoader();
             }
         }
 
         async function deleteCloudRecord(colName, id) {
             showWarningModal('Delete Record', 'Are you sure you want to delete this record from cloud database?', async () => {
+                showSyncLoader();
                 try {
                     await window.deleteDoc(window.doc(window.firebaseDb, colName, id));
-                    loadAllDataFromFirebase();
+                    await loadAllDataFromFirebase();
                     showToast("Record deleted successfully.");
                 } catch (e) {
                     console.error("Error deleting record:", e);
+                } finally {
+                    hideSyncLoader();
                 }
             });
         }
@@ -1989,6 +2165,7 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = async function(e) {
+                showSyncLoader();
                 try {
                     const importedCollections = JSON.parse(e.target.result);
                     if (!importedCollections || typeof importedCollections !== 'object') {
@@ -2010,6 +2187,8 @@
                 } catch (err) {
                     console.error("Import error:", err);
                     alert('Invalid JSON backup file.');
+                } finally {
+                    hideSyncLoader();
                 }
             };
             reader.readAsText(file);
