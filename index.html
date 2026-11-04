@@ -153,9 +153,6 @@
                 <button onclick="switchTab('hub')" id="nav-hub" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
                     <i class="fa-solid fa-warehouse text-xs sm:text-sm"></i><span>Delivery Hub</span>
                 </button>
-                <button onclick="switchTab('cctv')" id="nav-cctv" class="tab-btn py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-semibold text-[11px] sm:text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 flex items-center space-x-1.5 sm:space-x-2 whitespace-nowrap transition-all">
-                    <i class="fa-solid fa-video text-xs sm:text-sm"></i><span>CCTV</span>
-                </button>
             </div>
         </div>
     </nav>
@@ -343,6 +340,7 @@
                 <button onclick="switchDeviceSubTab('computer')" id="sub-nav-computer" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-red-600 text-white transition-all shadow-sm whitespace-nowrap">Computer</button>
                 <button onclick="switchDeviceSubTab('facerecog')" id="sub-nav-facerecog" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all whitespace-nowrap">Face Recognition</button>
                 <button onclick="switchDeviceSubTab('mikrotik')" id="sub-nav-mikrotik" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all whitespace-nowrap">Mikrotik</button>
+                <button onclick="switchDeviceSubTab('cctv')" id="sub-nav-cctv" class="device-sub-btn px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all whitespace-nowrap">CCTV</button>
             </div>
 
             <!-- Sub-tab: Computer -->
@@ -452,6 +450,38 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Sub-tab: CCTV -->
+            <div id="sub-tab-cctv" class="device-sub-content hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div class="flex items-center space-x-3 flex-wrap gap-2">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Surveillance Network</h3>
+                            <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
+                                <button onclick="setInventoryType('cctv', 'all')" id="btn-cctv-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
+                                <button onclick="setInventoryType('cctv', 'branch')" id="btn-cctv-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
+                                <button onclick="setInventoryType('cctv', 'hub')" id="btn-cctv-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
+                            </div>
+                            <!-- Ping All CCTV Button -->
+                            <button onclick="pingAllCctvDevices()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 shadow-sm">
+                                <i class="fa-solid fa-satellite-dish"></i><span>Ping All Units</span>
+                            </button>
+                            <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
+                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================= BRANCH TAB ================= -->
@@ -550,47 +580,6 @@
                 </div>
             </div>
             <div id="hub-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
-
-        <!-- ================= CCTV TAB ================= -->
-        <div id="tab-cctv" class="tab-content hidden space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">CCTV Systems Inventory</h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Monitor surveillance streams, storage capacities, and security credentials.</p>
-                </div>
-                <button onclick="openModal('cctv', 'add')" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all shadow-md shadow-red-600/20 flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-plus"></i><span>Add CCTV Unit</span>
-                </button>
-            </div>
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div class="flex items-center space-x-3 flex-wrap gap-2">
-                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Surveillance Network</h3>
-                        <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex space-x-1 border border-slate-200 dark:border-slate-700">
-                            <button onclick="setInventoryType('cctv', 'all')" id="btn-cctv-all" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition-all shadow-sm">All</button>
-                            <button onclick="setInventoryType('cctv', 'branch')" id="btn-cctv-branch" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Branches</button>
-                            <button onclick="setInventoryType('cctv', 'hub')" id="btn-cctv-hub" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">Hubs</button>
-                        </div>
-                        <!-- Ping All CCTV Button -->
-                        <button onclick="pingAllCctvDevices()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1.5 shadow-sm">
-                            <i class="fa-solid fa-satellite-dish"></i><span>Ping All Units</span>
-                        </button>
-                        <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
-                        <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                            <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
     </main>
@@ -839,6 +828,9 @@
                 } else if (subId === 'mikrotik') {
                     addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add Mikrotik Router</span>';
                     addBtn.setAttribute('onclick', "openModal('mikrotik', 'add')");
+                } else if (subId === 'cctv') {
+                    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Add CCTV Unit</span>';
+                    addBtn.setAttribute('onclick', "openModal('cctv', 'add')");
                 }
             }
         }
@@ -1450,9 +1442,9 @@
                     const remarks = (cctv.remarks || '').toLowerCase();
                     const st = (cctv.status || '').toLowerCase();
                     if (remarks.includes('hdd') || remarks.includes('dvr') || remarks.includes('replace')) {
-                        addPendingRow(cctv.branchCode, `CCTV DVR/HDD Replacement Required (${cctv.remarks})`, 'Needs Parts', 'Storage Alert', `<button onclick="switchTab('cctv')" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold px-2.5 py-1 rounded-lg transition">Check CCTV</button>`);
+                        addPendingRow(cctv.branchCode, `CCTV DVR/HDD Replacement Required (${cctv.remarks})`, 'Needs Parts', 'Storage Alert', `<button onclick="switchTab('devices'); switchDeviceSubTab('cctv');" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold px-2.5 py-1 rounded-lg transition">Check CCTV</button>`);
                     } else if (st === 'offline') {
-                        addPendingRow(cctv.branchCode, 'CCTV Surveillance Unit Offline', 'Offline', 'Stream Lost', `<button onclick="switchTab('cctv')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">Diagnose</button>`);
+                        addPendingRow(cctv.branchCode, 'CCTV Surveillance Unit Offline', 'Offline', 'Stream Lost', `<button onclick="switchTab('devices'); switchDeviceSubTab('cctv');" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold px-2.5 py-1 rounded-lg transition">Diagnose</button>`);
                     }
                 }
 
