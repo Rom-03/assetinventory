@@ -513,6 +513,7 @@
                         <option value="">All Statuses</option>
                         <option value="Online">Online</option>
                         <option value="Offline">Offline</option>
+                        <option value="Unknown">Unknown</option>
                     </select>
                     <!-- Sorting -->
                     <select id="sort-branch-by" onchange="renderBranchCardsGrid()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm font-medium">
@@ -632,10 +633,8 @@
                     <h4 class="font-bold text-slate-700 dark:text-slate-200 uppercase text-[10px] tracking-wider"><i class="fa-solid fa-network-wired text-red-600 mr-1.5"></i> Network Information</h4>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
                         <div><span class="text-slate-400 block text-[10px]">ISP Connection</span><span id="det-isp" class="font-semibold text-slate-800 dark:text-slate-100">PLDT</span></div>
-                        <div><span class="text-slate-400 block text-[10px]">Connection Type</span><span id="det-conn-type" class="font-mono text-slate-800 dark:text-slate-100">Fiber Dedicated</span></div>
                         <div><span class="text-slate-400 block text-[10px]">Router IP</span><span id="det-router-ip" class="font-mono text-slate-800 dark:text-slate-100">192.168.1.1</span></div>
                         <div><span class="text-slate-400 block text-[10px]">Gateway</span><span id="det-gateway" class="font-mono text-slate-800 dark:text-slate-100">192.168.1.254</span></div>
-                        <div><span class="text-slate-400 block text-[10px]">LAN Subnet</span><span id="det-subnet" class="font-mono text-slate-800 dark:text-slate-100">255.255.255.0</span></div>
                         <div><span class="text-slate-400 block text-[10px]">Branch Status</span><span id="det-status" class="font-semibold text-emerald-600">Online</span></div>
                     </div>
                 </div>
@@ -872,23 +871,33 @@
 
         function isItemHub(branchName, branchCode) {
             const nameToCheck = branchName || '';
+            // Only classify as hub if the name explicitly contains "HUB"
             if (nameToCheck.toUpperCase().includes('HUB')) {
                 return true;
-            }
-            if (branchCode) {
-                for (const [id, hubData] of Object.entries(window.dbCollections.hubs)) {
-                    if (hubData.branchCode === branchCode || (hubData.branchName && hubData.branchName.toUpperCase().includes('HUB'))) {
-                        return true;
-                    }
-                }
             }
             return false;
         }
 
+        // Automatically derive branch or delivery hub status from associated MikroTik device matched by Branch Code
+        function getDerivedStatus(branchCode) {
+            if (!branchCode) return 'Unknown';
+            const cleanCode = branchCode.trim().toUpperCase();
+            for (const mik of Object.values(window.dbCollections.mikrotik)) {
+                if ((mik.branchCode || '').trim().toUpperCase() === cleanCode) {
+                    const st = (mik.status || '').trim().toLowerCase();
+                    if (st === 'online') return 'Online';
+                    if (st === 'offline') return 'Offline';
+                }
+            }
+            return 'Unknown';
+        }
+
         function getStatusBadge(status) {
-            const isOffline = (status || '').toLowerCase() === 'offline';
-            if (isOffline) {
+            const s = (status || '').toLowerCase();
+            if (s === 'offline') {
                 return `<span class="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-xs px-2 py-0.5 rounded-full font-medium">Offline</span>`;
+            } else if (s === 'unknown') {
+                return `<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs px-2 py-0.5 rounded-full font-medium">Unknown</span>`;
             }
             return `<span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-full font-medium">Online</span>`;
         }
@@ -1125,6 +1134,13 @@
                     if (statusCell) statusCell.innerHTML = getStatusBadge(finalStatus);
                 }
                 
+                // If MikroTik status updates, automatically refresh branch/hub views & dashboard stats
+                if (collectionName === 'mikrotik') {
+                    renderBranchCardsGrid();
+                    loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
+                    updateDashboardStats();
+                }
+
                 if (!silent) {
                     if (finalStatus === 'Online') showToast(`Device ${cleanIp} is ONLINE!`);
                     else showToast(`Device ${cleanIp} is OFFLINE / Unreachable.`);
@@ -1140,6 +1156,12 @@
                 if (row) {
                     const statusCell = row.children[statusColumnIndex];
                     if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
+                }
+
+                if (collectionName === 'mikrotik') {
+                    renderBranchCardsGrid();
+                    loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
+                    updateDashboardStats();
                 }
 
                 if (!silent) showToast(`Device ${cleanIp} is OFFLINE / Unreachable.`);
@@ -1558,9 +1580,10 @@
             let pendingIssuesB = 0;
 
             branchEntries.forEach(([id, data]) => {
-                const st = (data.status || '').toLowerCase();
+                const derivedStatus = getDerivedStatus(data.branchCode);
+                const st = derivedStatus.toLowerCase();
                 if (st === 'offline') offlineB++;
-                else onlineB++;
+                else if (st === 'online') onlineB++;
 
                 const cleanCode = (data.branchCode || '').trim().toUpperCase();
                 let hasIssue = (data.remarks && data.remarks.trim() !== '') || st === 'offline';
@@ -1589,11 +1612,11 @@
                 const code = (data.branchCode || '').toLowerCase();
                 const loc = (data.location || '').toLowerCase();
                 const isp = data.isp || '';
-                const st = data.status || 'Online';
+                const derivedStatus = getDerivedStatus(data.branchCode);
 
                 const matchesSearch = name.includes(searchQuery) || code.includes(searchQuery) || loc.includes(searchQuery);
                 const matchesIsp = ispFilter === '' || isp === ispFilter;
-                const matchesStatus = statusFilter === '' || st === statusFilter;
+                const matchesStatus = statusFilter === '' || derivedStatus === statusFilter;
 
                 return matchesSearch && matchesIsp && matchesStatus;
             });
@@ -1630,6 +1653,7 @@
 
         function renderBranchCard(id, data) {
             const cleanBranchCode = (data.branchCode || '').trim().toUpperCase();
+            const derivedStatus = getDerivedStatus(cleanBranchCode);
             
             let operationalComputers = 0;
             let offlineComputers = 0;
@@ -1653,7 +1677,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName || ''}</h3>
                         <div class="flex items-center space-x-2">
-                            ${getStatusBadge(data.status)}
+                            ${getStatusBadge(derivedStatus)}
                             <span class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode || ''}</span>
                         </div>
                     </div>
@@ -1699,15 +1723,13 @@
             document.getElementById('det-branch-name').innerText = branch.branchName || 'Branch Location';
             document.getElementById('det-branch-code').innerText = branch.branchCode || 'CODE';
             document.getElementById('det-isp').innerText = branch.isp || 'PLDT';
-            document.getElementById('det-conn-type').innerText = branch.connectionType || 'Fiber Dedicated';
             document.getElementById('det-router-ip').innerText = branch.routerIp || '192.168.1.1';
             document.getElementById('det-gateway').innerText = branch.gateway || '192.168.1.254';
-            document.getElementById('det-subnet').innerText = branch.subnet || '255.255.255.0';
             
+            const derivedStatus = getDerivedStatus(branch.branchCode);
             const statusEl = document.getElementById('det-status');
-            const st = branch.status || 'Online';
-            statusEl.innerText = st;
-            statusEl.className = st.toLowerCase() === 'offline' ? 'font-semibold text-rose-600' : 'font-semibold text-emerald-600';
+            statusEl.innerText = derivedStatus;
+            statusEl.className = derivedStatus.toLowerCase() === 'offline' ? 'font-semibold text-rose-600' : (derivedStatus.toLowerCase() === 'online' ? 'font-semibold text-emerald-600' : 'font-semibold text-slate-500');
 
             document.getElementById('det-maintenance').innerText = branch.maintenanceHistory || 'Routine hardware and network maintenance completed. No critical incidents.';
             document.getElementById('det-remarks').innerText = branch.remarks || 'All systems functioning within normal operating parameters.';
@@ -1721,12 +1743,21 @@
             for (const [compId, comp] of Object.entries(window.dbCollections.computers)) {
                 if ((comp.branchCode || '').trim().toUpperCase() === cleanCode) {
                     assignedCount++;
+                    
+                    // Check Host ID / Device Name for "server" (case-insensitive)
+                    const hostName = (comp.hostId || comp.deviceName || '').trim().toLowerCase();
+                    const deviceLabel = hostName.includes('server') ? 'SERVER' : 'WORKSTATION';
+                    
+                    // Format identifier string including Serial Number if available
+                    const identifier = comp.hostId || comp.assetTag || 'No ID';
+                    const serialInfo = comp.serial ? ` • S/N: ${comp.serial}` : '';
+                    
                     const item = document.createElement('div');
                     item.className = "p-2.5 flex items-center justify-between text-xs";
                     item.innerHTML = `
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-laptop text-red-600"></i>
-                            <span class="font-medium text-slate-800 dark:text-slate-100">${comp.model || 'Standard Workstation'} (${comp.assetTag || comp.serial || 'No Tag'})</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-100">${deviceLabel} (${identifier}${serialInfo})</span>
                         </div>
                         <div class="flex items-center space-x-2">
                             <span class="font-mono text-[11px] text-slate-400">${comp.processor || ''}</span>
@@ -1769,6 +1800,7 @@
 
         function renderHubCard(id, data) {
             const cleanBranchCode = (data.branchCode || '').trim().toUpperCase();
+            const derivedStatus = getDerivedStatus(cleanBranchCode);
             
             let activeComputersCount = 0;
             for (const [compKey, compVal] of Object.entries(window.dbCollections.computers)) {
@@ -1786,7 +1818,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">${data.branchName || ''}</h3>
                         <div class="flex items-center space-x-2">
-                            ${getStatusBadge(data.status)}
+                            ${getStatusBadge(derivedStatus)}
                             <span class="bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 font-mono text-xs px-2.5 py-1 rounded-full font-bold">${data.branchCode || ''}</span>
                         </div>
                     </div>
@@ -1851,11 +1883,8 @@
                         <div><label class="${labelClass}">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">ISP Connection</label><select id="m-isp" class="${fieldClass}"><option ${data.isp==='PLDT'?'selected':''}>PLDT</option><option ${data.isp==='Globe'?'selected':''}>Globe</option><option ${data.isp==='Converge'?'selected':''}>Converge</option></select></div>
-                        <div><label class="${labelClass}">Connection Type</label><input type="text" id="m-connectionType" value="${data.connectionType || 'Fiber Dedicated'}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Router IP</label><input type="text" id="m-routerIp" value="${data.routerIp || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Gateway</label><input type="text" id="m-gateway" value="${data.gateway || ''}" class="${fieldClass}"></div>
-                        <div><label class="${labelClass}">LAN Subnet</label><input type="text" id="m-subnet" value="${data.subnet || ''}" class="${fieldClass}"></div>
-                        ${statusSelectHTML}
                         <div class="sm:col-span-2"><label class="${labelClass}">Maintenance & Remarks</label><input type="text" id="m-remarks" value="${data.remarks || ''}" class="${fieldClass}"></div>
                     </div>`;
             } else if (type === 'computer') {
@@ -1949,7 +1978,6 @@
                         <div><label class="${labelClass}">Team Head</label><input type="text" id="m-teamHead" value="${data.teamHead || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">Contact Number</label><input type="text" id="m-contactNo" value="${data.contactNo || ''}" class="${fieldClass}"></div>
                         <div><label class="${labelClass}">ISP</label><select id="m-isp" class="${fieldClass}"><option ${data.isp==='PLDT'?'selected':''}>PLDT</option><option ${data.isp==='Globe'?'selected':''}>Globe</option><option ${data.isp==='Converge'?'selected':''}>Converge</option></select></div>
-                        ${statusSelectHTML}
                     </div>`;
             }
         }
