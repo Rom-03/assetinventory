@@ -357,7 +357,12 @@
                             </div>
                             <button onclick="exportTableToCSV('table-computer', 'computer_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <div class="flex items-center">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <select id="sort-computer" onchange="reloadComputersTable()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
+                                <option value="default">Sort: Default</option>
+                                <option value="az">A–Z</option>
+                                <option value="recent">Recently Added</option>
+                            </select>
                             <input type="text" id="search-computer" oninput="filterTableSearch('computer')" placeholder="Search records..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
                         </div>
                     </div>
@@ -391,7 +396,12 @@
                             </button>
                             <button onclick="exportTableToCSV('table-facerecog', 'facerecognition_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <div class="flex items-center">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <select id="sort-facerecog" onchange="reloadFaceRecogTable()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
+                                <option value="default">Sort: Default</option>
+                                <option value="az">A–Z</option>
+                                <option value="recent">Recently Added</option>
+                            </select>
                             <input type="text" id="search-facerecog" oninput="filterTableSearch('facerecog')" placeholder="Search devices..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
                         </div>
                     </div>
@@ -436,7 +446,12 @@
                             </button>
                             <button onclick="exportTableToCSV('table-mikrotik', 'mikrotik_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <div class="flex items-center">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <select id="sort-mikrotik" onchange="reloadMikrotikTable()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
+                                <option value="default">Sort: Default</option>
+                                <option value="az">A–Z</option>
+                                <option value="recent">Recently Added</option>
+                            </select>
                             <input type="text" id="search-mikrotik" oninput="filterTableSearch('mikrotik')" placeholder="Search routers..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
                         </div>
                     </div>
@@ -468,7 +483,12 @@
                             </button>
                             <button onclick="exportTableToCSV('table-cctv', 'cctv_inventory.csv')" class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1"><i class="fa-solid fa-file-csv"></i><span>Export CSV</span></button>
                         </div>
-                        <div class="flex items-center">
+                        <div class="flex items-center flex-wrap gap-2">
+                            <select id="sort-cctv" onchange="reloadCctvTable()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium">
+                                <option value="default">Sort: Default</option>
+                                <option value="az">A–Z</option>
+                                <option value="recent">Recently Added</option>
+                            </select>
                             <input type="text" id="search-cctv" oninput="filterTableSearch('cctv')" placeholder="Search branch code or IP..." class="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 w-full sm:w-60">
                         </div>
                     </div>
@@ -733,6 +753,27 @@
             cctv: {}
         };
 
+        function getSortEntries(collectionObj, sortSelectId, getAlphaLabelFn) {
+            const entries = Object.entries(collectionObj);
+            const sortMode = document.getElementById(sortSelectId)?.value || 'default';
+
+            if (sortMode === 'az') {
+                entries.sort(([, a], [, b]) => {
+                    const labelA = (getAlphaLabelFn(a) || '').toString().trim();
+                    const labelB = (getAlphaLabelFn(b) || '').toString().trim();
+                    return labelA.localeCompare(labelB, undefined, { sensitivity: 'base' });
+                });
+            } else if (sortMode === 'recent') {
+                entries.sort(([, a], [, b]) => {
+                    const timeA = Number(a.createdAt || 0);
+                    const timeB = Number(b.createdAt || 0);
+                    return timeB - timeA;
+                });
+            }
+
+            return entries;
+        }
+
         function showSyncLoader() {
             const loader = document.getElementById('sync-loader');
             if (loader) {
@@ -947,8 +988,13 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             const filterType = inventoryFilters.computer;
+            const entries = getSortEntries(
+                window.dbCollections.computers,
+                'sort-computer',
+                (d) => d.hostId || d.branchName || d.locationDescription || d.location || d.model || d.branchCode || ''
+            );
             
-            for (const [id, data] of Object.entries(window.dbCollections.computers)) {
+            for (const [id, data] of entries) {
                 const bName = data.branchName || data.locationDescription || '';
                 const isHub = isItemHub(bName, data.branchCode);
                 if (filterType === 'branch' && isHub) continue;
@@ -963,8 +1009,13 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             const filterType = inventoryFilters.facerecog;
+            const entries = getSortEntries(
+                window.dbCollections.faceRecognition,
+                'sort-facerecog',
+                (d) => d.branchName || d.branchCode || d.ipAddress || ''
+            );
             
-            for (const [id, data] of Object.entries(window.dbCollections.faceRecognition)) {
+            for (const [id, data] of entries) {
                 const isHub = isItemHub(data.branchName, data.branchCode);
                 if (filterType === 'branch' && isHub) continue;
                 if (filterType === 'hub' && !isHub) continue;
@@ -978,8 +1029,13 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             const filterType = inventoryFilters.mikrotik;
+            const entries = getSortEntries(
+                window.dbCollections.mikrotik,
+                'sort-mikrotik',
+                (d) => d.branchName || d.branchCode || d.ipAddress || ''
+            );
             
-            for (const [id, data] of Object.entries(window.dbCollections.mikrotik)) {
+            for (const [id, data] of entries) {
                 const isHub = isItemHub(data.branchName, data.branchCode);
                 if (filterType === 'branch' && isHub) continue;
                 if (filterType === 'hub' && !isHub) continue;
@@ -993,8 +1049,13 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             const filterType = inventoryFilters.cctv;
+            const entries = getSortEntries(
+                window.dbCollections.cctv,
+                'sort-cctv',
+                (d) => d.branchName || d.branchCode || d.ipAddress || ''
+            );
             
-            for (const [id, data] of Object.entries(window.dbCollections.cctv)) {
+            for (const [id, data] of entries) {
                 const isHub = isItemHub(data.branchName, data.branchCode);
                 if (filterType === 'branch' && isHub) continue;
                 if (filterType === 'hub' && !isHub) continue;
@@ -2023,6 +2084,12 @@
             if (currentModalType === 'cctv') colName = 'cctv';
             if (currentModalType === 'branch') colName = 'branches';
             if (currentModalType === 'hub') colName = 'hubs';
+
+            if (currentModalMode === 'edit' && editingRecordId && window.dbCollections[colName]?.[editingRecordId]?.createdAt) {
+                payload.createdAt = window.dbCollections[colName][editingRecordId].createdAt;
+            } else if (currentModalMode !== 'edit') {
+                payload.createdAt = Date.now();
+            }
 
             if (payload.ipAddress && payload.ipAddress.trim() !== '') {
                 const targetIp = payload.ipAddress.trim();
