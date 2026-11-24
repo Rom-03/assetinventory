@@ -370,7 +370,7 @@
                         <table id="table-computer" class="w-full text-left text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
                             <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase sticky top-0 z-10 shadow-sm font-semibold">
                                 <tr>
-                                    <th class="p-3.5">TSE Name</th><th class="p-3.5">Business Unit</th><th class="p-3.5">Region</th><th class="p-3.5">Area</th><th class="p-3.5">Branch Code</th><th class="p-3.5">Location Description</th><th class="p-3.5">Asset Tag</th><th class="p-3.5">Serial</th><th class="p-3.5">Model</th><th class="p-3.5">Category</th><th class="p-3.5">Status</th><th class="p-3.5">PTU STATUS</th><th class="p-3.5">Branch TIN Number</th><th class="p-3.5">Machine Type</th><th class="p-3.5">Processor</th><th class="p-3.5">OS Version</th><th class="p-3.5">DEVICE FAMILY</th><th class="p-3.5">Host ID / Device Name</th><th class="p-3.5">OS Ticket #</th><th class="p-3.5">SOTI Enrolled</th><th class="p-3.5">Sophos Enrolled</th><th class="p-3.5">ITAMS Inventory</th><th class="p-3.5 text-right">Actions</th>
+                                    <th class="p-3.5">TSE Name</th><th class="p-3.5">Business Unit</th><th class="p-3.5">Region</th><th class="p-3.5">Area</th><th class="p-3.5">Branch Code</th><th class="p-3.5">Location Description</th><th class="p-3.5">Asset Tag</th><th class="p-3.5">Serial</th><th class="p-3.5">Model</th><th class="p-3.5">Category</th><th class="p-3.5">Status</th><th class="p-3.5">PTU STATUS</th><th class="p-3.5">Branch TIN Number</th><th class="p-3.5">Machine Type</th><th class="p-3.5">Processor</th><th class="p-3.5">OS Version</th><th class="p-3.5">DEVICE FAMILY</th><th class="p-3.5">Host ID / Device Name</th><th class="p-3.5">OS Ticket #</th><th class="p-3.5">SOTI Enrolled</th><th class="p-3.5">Sophos Enrolled</th><th class="p-3.5">ITAMS Inventory</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -420,7 +420,6 @@
                                     <th class="p-3.5">Password</th>
                                     <th class="p-3.5">Status</th>
                                     <th class="p-3.5">Remarks</th>
-                                    <th class="p-3.5 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
@@ -458,7 +457,7 @@
                     <div class="overflow-x-auto">
                         <table id="table-mikrotik" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                             <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Firmware Version</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
+                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Firmware Version</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
@@ -495,7 +494,7 @@
                     <div class="overflow-x-auto">
                         <table id="table-cctv" class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                             <thead class="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 uppercase font-semibold">
-                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th><th class="p-3.5 text-right">Actions</th></tr>
+                                <tr><th class="p-3.5">Branch Code</th><th class="p-3.5">Branch Name</th><th class="p-3.5">IP Address</th><th class="p-3.5">Cameras</th><th class="p-3.5">Storage</th><th class="p-3.5">Username</th><th class="p-3.5">Password</th><th class="p-3.5">Status</th><th class="p-3.5">Remarks</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
                         </table>
@@ -603,6 +602,18 @@
         </div>
 
     </main>
+
+    <!-- Row Context Popup Menu -->
+    <div id="rowActionMenu" class="fixed hidden z-50 w-44 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 text-xs animate-scale">
+        <button id="rowMenuEditBtn" type="button" class="w-full px-3.5 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 flex items-center space-x-2.5 font-medium transition-colors">
+            <i class="fa-solid fa-pen text-amber-600 dark:text-amber-400 w-3.5"></i>
+            <span>Edit</span>
+        </button>
+        <button id="rowMenuDeleteBtn" type="button" class="w-full px-3.5 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-700 dark:hover:text-rose-400 flex items-center space-x-2.5 font-medium transition-colors">
+            <i class="fa-solid fa-trash text-rose-600 dark:text-rose-400 w-3.5"></i>
+            <span>Delete</span>
+        </button>
+    </div>
 
     <!-- Floating Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
@@ -735,6 +746,7 @@
         let currentModalMode = 'add';
         let editingRecordId = null;
         let pendingAction = null;
+        let activeRowMenuTarget = null;
         
         // Toggle filters state
         const inventoryFilters = {
@@ -752,6 +764,83 @@
             hubs: {},
             cctv: {}
         };
+
+        function closeRowActionMenu() {
+            const menu = document.getElementById('rowActionMenu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+            activeRowMenuTarget = null;
+        }
+
+        function attachRowActionMenu(tr, modalType, colName, id) {
+            tr.classList.add('cursor-pointer', 'hover:bg-slate-50', 'dark:hover:bg-slate-800/60', 'transition-colors');
+            tr.addEventListener('click', (event) => {
+                if (event.target.closest('a, button, input, select')) {
+                    return;
+                }
+                event.stopPropagation();
+
+                const menu = document.getElementById('rowActionMenu');
+                const editBtn = document.getElementById('rowMenuEditBtn');
+                const deleteBtn = document.getElementById('rowMenuDeleteBtn');
+                if (!menu || !editBtn || !deleteBtn) return;
+
+                if (
+                    activeRowMenuTarget &&
+                    activeRowMenuTarget.modalType === modalType &&
+                    activeRowMenuTarget.colName === colName &&
+                    activeRowMenuTarget.id === id &&
+                    !menu.classList.contains('hidden')
+                ) {
+                    closeRowActionMenu();
+                    return;
+                }
+
+                activeRowMenuTarget = { modalType, colName, id };
+
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const target = activeRowMenuTarget;
+                    closeRowActionMenu();
+                    if (target) openModal(target.modalType, 'edit', target.id);
+                };
+
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const target = activeRowMenuTarget;
+                    closeRowActionMenu();
+                    if (target) deleteCloudRecord(target.colName, target.id);
+                };
+
+                menu.classList.remove('hidden');
+                const menuRect = menu.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                let left = event.clientX;
+                let top = event.clientY + 6;
+
+                if (left + menuRect.width > viewportWidth - 12) {
+                    left = Math.max(12, viewportWidth - menuRect.width - 12);
+                }
+                if (top + menuRect.height > viewportHeight - 12) {
+                    top = Math.max(12, event.clientY - menuRect.height - 6);
+                }
+
+                menu.style.left = `${left}px`;
+                menu.style.top = `${top}px`;
+            });
+        }
+
+        document.addEventListener('click', (event) => {
+            const menu = document.getElementById('rowActionMenu');
+            if (menu && !menu.classList.contains('hidden') && !menu.contains(event.target)) {
+                closeRowActionMenu();
+            }
+        });
+
+        window.addEventListener('scroll', closeRowActionMenu, true);
 
         function getSortEntries(collectionObj, sortSelectId, getAlphaLabelFn) {
             const entries = Object.entries(collectionObj);
@@ -807,6 +896,7 @@
         }
 
         function switchTab(tabId, saveState = true) {
+            closeRowActionMenu();
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.add('hidden');
                 el.classList.remove('animate-fade');
@@ -838,6 +928,7 @@
         }
 
         function switchDeviceSubTab(subId, saveState = true) {
+            closeRowActionMenu();
             currentDeviceSubTab = subId;
             document.querySelectorAll('.device-sub-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.device-sub-btn').forEach(el => {
@@ -877,6 +968,7 @@
         }
 
         function setInventoryType(tabKey, type) {
+            closeRowActionMenu();
             inventoryFilters[tabKey] = type;
             
             ['all', 'branch', 'hub'].forEach(t => {
@@ -936,6 +1028,7 @@
         }
 
         async function loadAllDataFromFirebase() {
+            closeRowActionMenu();
             showSyncLoader();
             try {
                 window.dbCollections = { computers: {}, faceRecognition: {}, mikrotik: {}, branches: {}, hubs: {}, cctv: {} };
@@ -1089,11 +1182,8 @@
                 <td class="p-3.5 font-mono">${data.osTicket || ''}</td>
                 <td class="p-3.5 font-bold ${data.soti === 'Yes' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}">${data.soti || 'No'}</td>
                 <td class="p-3.5 font-bold ${data.sophos === 'Yes' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}">${data.sophos || 'No'}</td>
-                <td class="p-3.5 font-bold ${data.itams === 'Yes' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}">${data.itams || 'No'}</td>
-                <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('computer', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('computers', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                <td class="p-3.5 font-bold ${data.itams === 'Yes' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}">${data.itams || 'No'}</td>`;
+            attachRowActionMenu(tr, 'computer', 'computers', id);
             return tr;
         }
 
@@ -1275,11 +1365,8 @@
                 <td class="p-3.5">${userDisplay}</td>
                 <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
-                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
-                <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('facerecog', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('faceRecognition', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>`;
+            attachRowActionMenu(tr, 'facerecog', 'faceRecognition', id);
             return tr;
         }
 
@@ -1330,11 +1417,8 @@
                 <td class="p-3.5">${userDisplay}</td>
                 <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
-                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
-                <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('mikrotik', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('mikrotik', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>`;
+            attachRowActionMenu(tr, 'mikrotik', 'mikrotik', id);
             return tr;
         }
 
@@ -1385,11 +1469,8 @@
                 <td class="p-3.5">${userDisplay}</td>
                 <td class="p-3.5">${renderPasswordCell(data.password)}</td>
                 <td class="p-3.5">${getStatusBadge(data.status)}</td>
-                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>
-                <td class="p-3.5 text-right space-x-1">
-                    <button onclick="openModal('cctv', 'edit', '${id}')" class="bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-pen"></i></button>
-                    <button onclick="deleteCloudRecord('cctv', '${id}')" class="bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fa-solid fa-trash"></i></button>
-                </td>`;
+                <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>`;
+            attachRowActionMenu(tr, 'cctv', 'cctv', id);
             return tr;
         }
 
@@ -1891,6 +1972,7 @@
         }
 
         function openModal(type, mode, recordId = null) {
+            closeRowActionMenu();
             currentModalType = type;
             currentModalMode = mode;
             editingRecordId = recordId;
