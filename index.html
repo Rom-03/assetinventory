@@ -60,11 +60,6 @@
           if(savedTab === 'devices') {
               switchDeviceSubTab(savedSubTab, false);
           }
-
-          // Setup Automatic Ping Sync every 5 minutes (300000 ms)
-          setInterval(() => {
-              autoPingAllNetworkDevices();
-          }, 300000);
       });
     </script>
 
@@ -748,7 +743,6 @@
         let pendingAction = null;
         let activeRowMenuTarget = null;
         let isMikrotikPingRunning = false;
-        let mikrotikPeriodicTimer = null;
 
         // Configure your ICMP ping runner endpoint (e.g. "http://localhost:8787/ping" or "/api/icmp-ping")
         // Expected response: JSON { "online": true/false } or { "reachable": true/false } or { "alive": true/false }
@@ -1059,7 +1053,6 @@
                 loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
                 updateDashboardStats();
-                startMikrotikPeriodicMonitor();
             } catch (e) {
                 console.error("Error loading data from Firestore:", e);
             } finally {
@@ -1503,17 +1496,6 @@
             }
         }
 
-        function startMikrotikPeriodicMonitor() {
-            if (mikrotikPeriodicTimer) {
-                clearInterval(mikrotikPeriodicTimer);
-            }
-            // Periodic ICMP status refresh for MikroTik devices every 60 seconds
-            mikrotikPeriodicTimer = setInterval(() => {
-                if (document.visibilityState === 'hidden') return;
-                pingAllMikrotikRouters(true);
-            }, 60000);
-        }
-
         function renderMikrotikRow(id, data) {
             const tr = document.createElement('tr');
             tr.setAttribute('data-id', id);
@@ -1590,26 +1572,6 @@
                 <td class="p-3.5 text-slate-600 dark:text-slate-300">${data.remarks || ''}</td>`;
             attachRowActionMenu(tr, 'cctv', 'cctv', id);
             return tr;
-        }
-
-        // Automatic Background Refresh Ping (Every 5 minutes)
-        async function autoPingAllNetworkDevices() {
-            showSyncLoader();
-            showToast('Automatic 5-min status check initiating...');
-            
-            await pingAllMikrotikRouters(true);
-            for (const [id, d] of Object.entries(window.dbCollections.faceRecognition)) {
-                await checkFaceRecogStatusLive(id, d.ipAddress, true);
-                await sleep(150);
-            }
-            for (const [id, d] of Object.entries(window.dbCollections.cctv)) {
-                await checkCctvStatusLive(id, d.ipAddress, true);
-                await sleep(150);
-            }
-
-            hideSyncLoader();
-            showToast('Automated device ping sync complete.');
-            updateDashboardStats();
         }
 
         // ================= DASHBOARD METRICS CALCULATOR =================
