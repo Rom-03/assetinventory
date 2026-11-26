@@ -747,6 +747,12 @@
         let editingRecordId = null;
         let pendingAction = null;
         let activeRowMenuTarget = null;
+        let isMikrotikPingRunning = false;
+        let mikrotikPeriodicTimer = null;
+
+        // Configure your ICMP ping runner endpoint (e.g. "http://localhost:8787/ping" or "/api/icmp-ping")
+        // Expected response: JSON { "online": true/false } or { "reachable": true/false } or { "alive": true/false }
+        window.mikrotikPingEndpoint = window.mikrotikPingEndpoint = 'http://127.0.0.1:3001/ping';
         
         // Toggle filters state
         const inventoryFilters = {
@@ -1053,6 +1059,7 @@
                 loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
                 
                 updateDashboardStats();
+                startMikrotikPeriodicMonitor();
             } catch (e) {
                 console.error("Error loading data from Firestore:", e);
             } finally {
@@ -1218,7 +1225,7 @@
             }
         }
 
-        // Generic Network Live Ping Logic using Image Probe (Bypasses CORS & SSL Certificate Warning Blocks)
+        // Generic Network Live Ping Logic for non-Mikrotik devices
         async function checkDeviceStatusLive(collectionName, tableId, statusColumnIndex, id, ipAddress, silent = false) {
             if (!ipAddress) {
                 if (!silent) showToast('No IP address configured for this device.');
@@ -1276,13 +1283,6 @@
                     const statusCell = row.children[statusColumnIndex];
                     if (statusCell) statusCell.innerHTML = getStatusBadge(finalStatus);
                 }
-                
-                // If MikroTik status updates, automatically refresh branch/hub views & dashboard stats
-                if (collectionName === 'mikrotik') {
-                    renderBranchCardsGrid();
-                    loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
-                    updateDashboardStats();
-                }
 
                 if (!silent) {
                     if (finalStatus === 'Online') showToast(`Device ${cleanIp} is ONLINE!`);
@@ -1301,17 +1301,61 @@
                     if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
                 }
 
-                if (collectionName === 'mikrotik') {
-                    renderBranchCardsGrid();
-                    loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
-                    updateDashboardStats();
-                }
-
                 if (!silent) showToast(`Device ${cleanIp} is OFFLINE / Unreachable.`);
                 return 'Offline';
             } finally {
                 hideSyncLoader();
             }
+        }
+
+        // ICMP Ping probe for MikroTik devices (never uses WebFig / www / www-ssl)
+        async function probeMikrotikIcmpPing(ipAddress, timeoutMs = 3000) {
+            const cleanIp = (ipAddress || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+            if (!cleanIp || !window.mikrotikPingEndpoint) {
+                return false;
+            }
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+            try {
+                const separator = window.mikrotikPingEndpoint.includes('?') ? '&' : '?';
+                const url = `${window.mikrotikPingEndpoint}${separator}ip=${encodeURIComponent(cleanIp)}&count=1&timeout=${timeoutMs}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    return false;
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const result = await response.json();
+                    if (typeof result.online === 'boolean') return result.online;
+                    if (typeof result.reachable === 'boolean') return result.reachable;
+                    if (typeof result.alive === 'boolean') return result.alive;
+                    if (typeof result.status === 'string') {
+                        return result.status.trim().toLowerCase() === 'online';
+                    }
+                    return false;
+                }
+
+                const text = (await response.text()).trim().toLowerCase();
+                return text === 'online' || text === 'true' || text === 'reachable' || text === 'pong';
+            } catch (err) {
+                return false;
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        function refreshMikrotikDependentViews() {
+            renderBranchCardsGrid();
+            loadCardsIntoGrid('hubs', 'hub-cards-grid', renderHubCard);
+            updateDashboardStats();
         }
 
         // Face Recognition Ping Functions
@@ -1370,30 +1414,104 @@
             return tr;
         }
 
-        // Mikrotik Ping Functions
+        // Mikrotik ICMP Ping Functions
         async function checkMikrotikStatusLive(id, ipAddress, silent = false) {
-            return await checkDeviceStatusLive('mikrotik', 'table-mikrotik', 6, id, ipAddress, silent);
+            if (!ipAddress || !ipAddress.trim()) {
+                if (!silent) showToast('No IP address configured for this router.');
+                return 'Offline';
+            }
+
+            if (!silent) showToast(`ICMP pinging ${ipAddress.trim()}...`);
+            showSyncLoader();
+
+            try {
+                const isReachable = await probeMikrotikIcmpPing(ipAddress.trim(), 3000);
+                const finalStatus = isReachable ? 'Online' : 'Offline';
+
+                await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: finalStatus });
+                if (window.dbCollections.mikrotik && window.dbCollections.mikrotik[id]) {
+                    window.dbCollections.mikrotik[id].status = finalStatus;
+                }
+
+                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[6];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge(finalStatus);
+                }
+
+                refreshMikrotikDependentViews();
+
+                if (!silent) {
+                    if (finalStatus === 'Online') showToast(`MikroTik ${ipAddress.trim()} replied to ICMP ping (Online).`);
+                    else showToast(`MikroTik ${ipAddress.trim()} did not respond to ICMP ping (Offline).`);
+                }
+                return finalStatus;
+            } catch (error) {
+                console.error('MikroTik ICMP ping error:', error);
+                try {
+                    await window.updateDoc(window.doc(window.firebaseDb, 'mikrotik', id), { status: 'Offline' });
+                } catch (_) {}
+                if (window.dbCollections.mikrotik && window.dbCollections.mikrotik[id]) {
+                    window.dbCollections.mikrotik[id].status = 'Offline';
+                }
+
+                const row = document.querySelector(`#table-mikrotik tr[data-id="${id}"]`);
+                if (row) {
+                    const statusCell = row.children[6];
+                    if (statusCell) statusCell.innerHTML = getStatusBadge('Offline');
+                }
+
+                refreshMikrotikDependentViews();
+                if (!silent) showToast(`MikroTik ${ipAddress.trim()} is Offline.`);
+                return 'Offline';
+            } finally {
+                hideSyncLoader();
+            }
         }
 
-        async function pingAllMikrotikRouters() {
+        async function pingAllMikrotikRouters(silent = false) {
+            if (isMikrotikPingRunning) return;
             const routers = window.dbCollections.mikrotik;
             const entries = Object.entries(routers);
             if (entries.length === 0) {
-                showToast('No Mikrotik routers to ping.');
+                if (!silent) showToast('No Mikrotik routers to ping.');
                 return;
             }
 
-            showToast(`Pinging ${entries.length} routers sequentially to prevent timeouts...`);
+            isMikrotikPingRunning = true;
+            if (!silent) showToast(`ICMP pinging ${entries.length} MikroTik routers...`);
             showSyncLoader();
-            
-            for (const [id, data] of entries) {
-                await checkMikrotikStatusLive(id, data.ipAddress, true);
-                await sleep(150); 
-            }
 
-            hideSyncLoader();
-            showToast('Finished pinging all routers reliably!');
-            updateDashboardStats();
+            try {
+                // Process in small bounded chunks (3 at a time) so UI stays responsive and fast
+                const concurrency = 3;
+                for (let i = 0; i < entries.length; i += concurrency) {
+                    const batch = entries.slice(i, i + concurrency);
+                    await Promise.all(
+                        batch.map(([id, data]) => checkMikrotikStatusLive(id, data.ipAddress, true))
+                    );
+                    if (i + concurrency < entries.length) {
+                        await sleep(100);
+                    }
+                }
+
+                refreshMikrotikDependentViews();
+                if (!silent) showToast('Finished ICMP ping check for all MikroTik routers!');
+            } finally {
+                isMikrotikPingRunning = false;
+                hideSyncLoader();
+            }
+        }
+
+        function startMikrotikPeriodicMonitor() {
+            if (mikrotikPeriodicTimer) {
+                clearInterval(mikrotikPeriodicTimer);
+            }
+            // Periodic ICMP status refresh for MikroTik devices every 60 seconds
+            mikrotikPeriodicTimer = setInterval(() => {
+                if (document.visibilityState === 'hidden') return;
+                pingAllMikrotikRouters(true);
+            }, 60000);
         }
 
         function renderMikrotikRow(id, data) {
@@ -1402,8 +1520,8 @@
 
             const ipDisplay = data.ipAddress ? `
                 <div class="flex items-center space-x-1.5">
-                    <a href="http://${data.ipAddress}" target="_blank" class="font-mono text-xs text-red-600 dark:text-red-400 hover:underline">${data.ipAddress}</a>
-                    <button onclick="checkMikrotikStatusLive('${id}', '${data.ipAddress}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded transition" title="Test Live Status"><i class="fa-solid fa-rotate"></i></button>
+                    <span class="font-mono text-xs text-slate-800 dark:text-slate-100">${data.ipAddress}</span>
+                    <button onclick="checkMikrotikStatusLive('${id}', '${data.ipAddress}')" class="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded transition" title="Test ICMP Ping"><i class="fa-solid fa-rotate"></i></button>
                 </div>` : '';
 
             const firmwareDisplay = data.firmwareVersion ? `<span class="font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${data.firmwareVersion}</span>` : '';
@@ -1479,10 +1597,7 @@
             showSyncLoader();
             showToast('Automatic 5-min status check initiating...');
             
-            for (const [id, d] of Object.entries(window.dbCollections.mikrotik)) {
-                await checkMikrotikStatusLive(id, d.ipAddress, true);
-                await sleep(150);
-            }
+            await pingAllMikrotikRouters(true);
             for (const [id, d] of Object.entries(window.dbCollections.faceRecognition)) {
                 await checkFaceRecogStatusLive(id, d.ipAddress, true);
                 await sleep(150);
@@ -2190,13 +2305,18 @@
 
             showSyncLoader();
             try {
+                let savedDocId = editingRecordId;
                 if (currentModalMode === 'edit' && editingRecordId) {
                     await window.updateDoc(window.doc(window.firebaseDb, colName, editingRecordId), payload);
                 } else {
-                    await window.addDoc(window.collection(window.firebaseDb, colName), payload);
+                    const docRef = await window.addDoc(window.collection(window.firebaseDb, colName), payload);
+                    savedDocId = docRef.id;
                 }
                 closeModal();
                 await loadAllDataFromFirebase();
+                if (currentModalType === 'mikrotik' && savedDocId && payload.ipAddress) {
+                    await checkMikrotikStatusLive(savedDocId, payload.ipAddress, true);
+                }
                 showToast("Record saved successfully!");
             } catch (e) {
                 console.error("Error saving record:", e);
